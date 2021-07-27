@@ -11,26 +11,32 @@ gls <- function(map, zprior, U, obs, zref=zprior) {
   # prepare the statistical model description
   # and auxiliary quantities
   adjustable <- diag(U) > 0
-  Ured <- U[adjustable, adjustable]
-  invU <- solve(Ured, sparse=TRUE)
+  isindep <- !obsmask & adjustable
+  stopifnot(all(diag(U)[obsmask] > 0))
+
+  Ured <- U[adjustable,adjustable]
+  invUred <- solve(Ured, sparse=TRUE)
 
   v <- zprior
   v[obsmask] <- obs[obsmask]
   vref <- zref
   vref[obsmask] <- yref[obsmask]
+  # select only adjustable or observed
+  v <- v[adjustable]
+  vref <- vref[adjustable]
 
-  Sred <- S[obsmask,!obsmask]
-  Sred1 <- S[,!obsmask]
-  invPostU_red <- forceSymmetric(t(Sred1) %*% invU %*% Sred1)
+  Sred <- S[obsmask, isindep]
+  Sred1 <- S[adjustable, isindep]
+  invPostU_red <- forceSymmetric(t(Sred1) %*% invUred %*% Sred1)
 
-  s1 <- solve(U, v - vref)
+  s1 <- solve(Ured, v - vref)
   s2 <- t(Sred1) %*% s1
   s3 <- solve(invPostU_red, s2)
 
   zpost <- rep(0, length(zprior))
-  zpost[!obsmask] <- zref[!obsmask] + s3
+  zpost[isindep] <- zref[isindep] + s3
 
   # calculate posterior of experimental values
-  zpost[obsmask] <- obs[obsmask] - Sred %*% zpost[!obsmask]
+  zpost[obsmask] <- obs[obsmask] - Sred %*% zpost[isindep]
   zpost
 }

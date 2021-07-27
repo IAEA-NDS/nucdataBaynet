@@ -38,7 +38,7 @@ create_nonlinear_map <- function() {
 
   jacobian <- function(x, with.id=TRUE) {
     S <- sparseMatrix(i = map$tar_idx, j = map$src_idx,
-                      x = exp(x), dims = rep(length(x), 2))
+                      x = exp(x[map$src_idx]), dims = rep(length(x), 2))
     if (with.id) {
       diag(S) <- diag(S) + 1
     }

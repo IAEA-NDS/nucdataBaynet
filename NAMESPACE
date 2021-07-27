@@ -1,3 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 import(Matrix)
 import(data.table)
+# for unit tests of non-linear maps
+import(numDeriv)

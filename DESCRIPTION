@@ -9,7 +9,7 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Imports: Matrix, data.table
+Imports: Matrix, data.table, numDeriv
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

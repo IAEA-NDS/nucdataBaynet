@@ -1,51 +1,12 @@
 create_compound_map <- function() {
 
-  registered_map_creators <- list(
-    "normerr_map" = create_normerr_map,
-    "linmod_map" = create_linmod_map,
-    "nonlinear_map" = create_nonlinear_map
-  )
-
   map_list <- list()
   pure_sources <- NULL
   pure_targets <- NULL
 
-  order_maps <- function(maps) {
-    ordmaps <- maps
-    if (length(ordmaps) > 1)
-    {
-      i <- 1
-      j <- 2
-      while (TRUE) {
-        if (anyDuplicated(c(ordmaps[[i]]$get_src_idx(),
-                            ordmaps[[j]]$get_tar_idx()))) {
-          tmp <- ordmaps[[j]]
-          ordmaps[[j]] <- ordmaps[[i]]
-          ordmaps[[i]] <- tmp
-          j <- i + 1
-        } else {
-          j <- j + 1
-        }
-        if (j > length(ordmaps)) {
-          i <- i + 1
-          j <- i + 1
-        }
-        if (j > length(ordmaps)) {
-          break
-        }
-      }
-    }
-    ordmaps
-  }
-
   setup <- function(params) {
 
-    maps <- lapply(params$maps, function(curparams) {
-      curmap <- registered_map_creators[[curparams$mapname]]()
-      curmap$setup(curparams)
-      curmap
-    })
-
+    maps <- lapply(params$maps, create_map)
     max_idx <- 0
     # ensure no duplicates in indices
     for (i in seq_along(maps)) {
@@ -98,7 +59,7 @@ create_compound_map <- function() {
   propagate <- function(x, with.id = TRUE) {
     res <- x
     if (!with.id) {
-      res[pure_targets] <- 0
+      res[-pure_sources] <- 0
     }
     initialres <- res
     for (curmap in map_list) {
@@ -133,6 +94,10 @@ create_compound_map <- function() {
 
   jacobian <- function(x, with.id = TRUE) {
     S <- NULL
+    if (!with.id) {
+      x[-pure_sources] <- 0
+    }
+    x <- propagate(x, TRUE)
     for (curmap in map_list) {
       if (is.null(S))
       {

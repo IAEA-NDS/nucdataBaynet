@@ -6,7 +6,7 @@ create_linmod_map <- function() {
 
   setup <- function(params) {
     stopifnot(params$mapname == getName())
-    stopifnot(!is.unsorted(params$tar_x))
+    stopifnot(!is.unsorted(params$src_x))
     stopifnot(min(params$src_x) <= min(params$tar_x))
     stopifnot(max(params$src_x) >= max(params$tar_x))
     stopifnot(all(c('mapname','src_idx','tar_idx','src_x','tar_x') %in% names(params)))

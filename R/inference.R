@@ -18,7 +18,7 @@ gls <- function(map, zprior, U, obs, zref=zprior) {
   invUred <- solve(Ured, sparse=TRUE)
 
   v <- zprior
-  v[obsmask] <- obs[obsmask]
+  v[obsmask] <- obs[obsmask] - zprior[obsmask]
   vref <- zref
   vref[obsmask] <- yref[obsmask]
   # select only adjustable or observed
@@ -33,10 +33,9 @@ gls <- function(map, zprior, U, obs, zref=zprior) {
   s2 <- t(Sred1) %*% s1
   s3 <- solve(invPostU_red, s2)
 
-  zpost <- rep(0, length(zprior))
+  zpost <- zprior
   zpost[isindep] <- zref[isindep] + s3
-
   # calculate posterior of experimental values
-  zpost[obsmask] <- obs[obsmask] - Sred %*% zpost[isindep]
+  zpost[obsmask] <- obs[obsmask] - (yref[obsmask] + Sred %*% (zpost[isindep] - zref[isindep]))
   zpost
 }

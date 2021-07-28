@@ -52,24 +52,25 @@ gls <- function(map, zprior, U, obs, zref=zprior, damp=0, ret.list=FALSE) {
 }
 
 
-LMalgo <- function(map, zprior, U, obs, zref=zprior, ret.invcov=FALSE) {
+LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invcov=FALSE) {
 
   # LM parameters
   reltol <- 1e-5
   maxcount <- 200
+  mincount <- 10
+  tau <- 1e-8
 
   adjustable <- diag(U) > 0
   observed <- !is.na(obs)
   isindep <- adjustable & !observed
   adjobs <- observed[adjustable]
-  tau <- 1e-3
   Ured <- U[adjustable, adjustable]
 
   # determine the apriori scale for the damping term
   S <- map$jacobian(zref, with.id=TRUE)
   S <- S[adjustable, isindep]
   invUred_post <- crossprod(S, solve(Ured, S))
-  lambda <- tau * max(invUred_post)
+  lambda <- tau * max(diag(invUred_post))
   remove(S, invUred_post)
 
   # run the LM optimization loop
@@ -81,7 +82,10 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, ret.invcov=FALSE) {
   cnt <- 0
   last_reject <- TRUE
   rel_gain <- Inf
-  while (cnt < maxcount && !(last_reject == FALSE && relgain <= reltol)) {
+  while (cnt < mincount ||
+         (cnt < maxcount &&
+          abs(relgain) > 1e-14 &&
+          !(last_reject == FALSE && relgain <= reltol))) {
     cnt <- cnt + 1
     zprop <- gls(map, zprior, U, obs, zref=zref, damp=lambda)
     # calculate improvement according to linear approximation
@@ -110,6 +114,11 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, ret.invcov=FALSE) {
     } else {
       last_reject <- TRUE
     }
+    # print information
+    if (print.info) {
+      cat(paste0("iter ", cnt, " - gain: ", gain, " - relgain: ", relgain, " - fex: ", last_fex, "\n"))
+      cat(paste0("last_reject: ", last_reject, "\n"))
+    }
   }
 
   res <- list(
@@ -129,3 +138,4 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, ret.invcov=FALSE) {
   }
   return(res)
 }
+

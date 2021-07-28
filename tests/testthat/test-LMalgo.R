@@ -90,7 +90,7 @@ test_that("LM algorithm converges to same solution from different starting point
   sel <- dt[node %in% c("mod", "normerr"),IDX]
   zstart1[sel] <- c(4, 2, 1)
   zstart2[sel] <- c(1, 3, 3)
-  curres1 <- LMalgo(comp_map, zprior, U, dt$obs, zref=zstart1, ret.invcov=FALSE)
-  curres2 <- LMalgo(comp_map, zprior, U, dt$obs, zref=zstart2, ret.invcov=FALSE)
+  curres1 <- LMalgo(comp_map, zprior, U, dt$obs, zref=zstart1)
+  curres2 <- LMalgo(comp_map, zprior, U, dt$obs, zref=zstart2)
   expect_equal(curres1$final_val, curres2$final_val)
 })

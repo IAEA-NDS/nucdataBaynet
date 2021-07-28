@@ -115,7 +115,8 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, ret.invcov=FALSE) {
   res <- list(
     zpost = zref,
     init_val = init_fex,
-    final_val = last_fex
+    final_val = last_fex,
+    numiter = cnt
   )
   # determine the a posteriori covariance matrix
   if (ret.invcov) {

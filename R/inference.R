@@ -139,3 +139,60 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invco
   return(res)
 }
 
+
+get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs) {
+
+  stopifnot(length(zpost) == nrow(U))
+  stopifnot(length(zpost) == ncol(U))
+
+  if (is.logical(row_idcs)) {
+    row_idcs <- which(row_idcs)
+  }
+  if (is.logical(col_idcs)) {
+    col_idcs <- which(col_idcs)
+  }
+
+  adjustable <- diag(U) > 0
+  observed <- !is.na(obs)
+  isindep <- adjustable & !observed
+  isfixed <- !adjustable & !observed
+  adjobs <- observed[adjustable]
+
+  is_indep_row <- isindep[row_idcs]
+  is_indep_col <- isindep[col_idcs]
+  is_obs_row <- observed[row_idcs]
+  is_obs_col <- observed[col_idcs]
+
+  is_fixed_row <- isfixed[row_idcs]
+  is_fixed_col <- isfixed[col_idcs]
+
+  map_idcs_to_indep <- rep(NA, length(zpost))
+  map_idcs_to_indep[isindep] <- seq_len(sum(isindep))
+
+  # determine uncertainties of independent variables
+  S <- drop0(map$jacobian(zpost, with.id=TRUE))
+  Sred <- S[adjustable, isindep]
+  Ured <- U[adjustable, adjustable]
+  invPostU_red <- forceSymmetric(crossprod(Sred, solve(Ured, Sred, sparse=TRUE)))
+
+  S_left <- sparseMatrix(i=seq_along(row_idcs)[is_indep_row],
+                         j=map_idcs_to_indep[row_idcs[is_indep_row]],
+                         x=1,
+                         dims=c(length(row_idcs), ncol(Sred)))
+  S_left[is_obs_row,] <- S[row_idcs[is_obs_row], isindep]
+  S_left <- drop0(S_left)
+
+  S_right <- sparseMatrix(i=seq_along(col_idcs)[is_indep_col],
+                          j=map_idcs_to_indep[col_idcs[is_indep_col]],
+                          x=1,
+                          dims=c(length(col_idcs), ncol(Sred)))
+  S_right[is_obs_col,] <- S[col_idcs[is_obs_col], isindep]
+  S_right <- drop0(S_right)
+
+  Upost <- S_left %*% solve(invPostU_red, t(S_right))
+  # fix the covariance matrix of error variables attached to observed nodes
+  Upost[is_obs_row,] <- (-Upost[is_obs_row,])
+  Upost[,is_obs_col] <- (-Upost[,is_obs_col])
+  return(Upost)
+}
+

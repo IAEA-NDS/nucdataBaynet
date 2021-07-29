@@ -196,3 +196,57 @@ get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs) {
   return(Upost)
 }
 
+
+get_posterior_sample <- function(map, zpost, U, obs, num) {
+
+  adjustable <- diag(U) > 0
+  observed <- !is.na(obs)
+  isindep <- adjustable & !observed
+  adjobs <- observed[adjustable]
+
+  numindep <- sum(isindep)
+  numobs <- sum(observed)
+
+  S <- drop0(map$jacobian(zpost, with.id=TRUE))
+  Sred <- S[adjustable, isindep]
+  Ured <- U[adjustable, adjustable]
+  invPostU_red <- forceSymmetric(crossprod(Sred, solve(Ured, Sred, sparse=TRUE)))
+
+  Lfact <- chol(invPostU_red)
+  rvec <- matrix(rnorm(numindep*num), nrow=numindep)
+  zpost[observed] <- 0
+  smpl <- matrix(rep(zpost, num), ncol=num, nrow=length(zpost))
+  smpl[isindep,] <- smpl[isindep,] + as.matrix(solve(Lfact, rvec, system="L"))
+  # calculate the errors associated with observed nodes
+  for (i in seq_len(num)) {
+    smpl[observed,i] <- obs[observed] - map$propagate(zpost, with.id=TRUE)[observed]
+  }
+  return(smpl)
+
+  Sred <- S[adjustable, isindep]
+  invPostU_red <- forceSymmetric(crossprod(Sred, solve(Ured, Sred, sparse=TRUE)))
+
+  A <- matrix(runif(9), 3, 3)
+  A <- A %*% t(A)
+  x <- runif(3)
+
+
+  L <- chol(A)
+  t(L) %*% L
+
+  A2 <- as(A, "sparseMatrix")
+  L2 <- Cholesky(A2)
+
+  solve(L, x)
+  solve(L2, x, system="L")
+
+  invA <- solve(A)
+  res1 <- rmvnorm(1e6, rep(0, 3), invA)
+  cov.wt(res1)
+
+  rvec <- matrix(rnorm(3*10000), nrow=3)
+  rvec2 <- solve(L2, rvec, system="L")
+  cov.wt(as.matrix(t(rvec2)))
+
+  S <- matrix(runif(9), 3, 3)
+}

@@ -97,7 +97,7 @@ create_compound_map <- function() {
     if (!with.id) {
       x[-pure_sources] <- 0
     }
-    x <- propagate(x, TRUE)
+    orig_x <- x
     for (curmap in map_list) {
       if (is.null(S))
       {
@@ -115,14 +115,22 @@ create_compound_map <- function() {
         self_map_flag <- is_self_map(curmap)
         cur_tar_idx <- curmap$get_tar_idx()
         if (self_map_flag) {
-          save_diag <- diag(S)[cur_tar_idx]
           diag(S)[cur_tar_idx] <- 0
+          x[cur_tar_idx] <- x[cur_tar_idx] - orig_x[cur_tar_idx]
         }
-        S <- curmap$jacobian(x, TRUE) %*% S
+        curS <- curmap$jacobian(x, TRUE)
         if (self_map_flag) {
-          diag(S)[cur_tar_idx] <- save_diag
+          diag(curS)[cur_tar_idx] <- diag(curS)[cur_tar_idx] - 1
+        }
+        S <- curS %*% S
+        if (self_map_flag) {
+          if (with.id) {
+            diag(S)[cur_tar_idx] <- 1
+          }
+          x[cur_tar_idx] <- x[cur_tar_idx] + orig_x[cur_tar_idx]
         }
       }
+      x <- curmap$propagate(x, with.id=TRUE)
     }
     if (!with.id) {
       diag(S)[pure_sources] <- 0

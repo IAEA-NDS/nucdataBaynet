@@ -132,3 +132,22 @@ test_that("Parts of posterior covariance matrix correctly computed for determini
   dimnames(res) <- dimnames(expres) <- NULL
   expect_equal(res, expres)
 })
+
+
+test_that("Posterior samples are reasonably consistent with posterior distribution", {
+  cursysdt <- copy(sysdt)
+  linmod_map <- create_linmod_map()
+  linmod_map$setup(params)
+  zprior <- sysdt[, data]
+  obs <- cursysdt$obs
+  U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
+  zpost <- gls(linmod_map, zprior, U, obs)
+  postcov <- get_posterior_cov(linmod_map, zpost, U, obs,
+                               seq_along(zpost), seq_along(zpost))
+  num <- 1e4
+  smpl <- get_posterior_sample(linmod_map, zpost, U, obs, num)
+  smplcov <- cov.wt(t(smpl), method="unbiased")$cov
+  sigma <- sqrt(2/num) * diag(postcov)
+  zscores <- (diag(postcov) - diag(smplcov)) / sigma
+  expect_true(all(zscores < 3))
+})

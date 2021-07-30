@@ -220,29 +220,23 @@ test_that("nested map with nonlinear selfmap propagates correctly with id contri
 })
 
 
-test_that("sensitivity matrix without id matrix of nested map with selfmap correctly computed", {
-  if (FALSE) {
-    nestedmap <- create_compound_map()
-    nestedmap$setup(compound_params3)
-    inp <- 1:15
-    compS <- nestedmap$jacobian(inp, with.id=FALSE)
-    linS <- linmap$jacobian(inp, with.id=FALSE)
-    normerrS <- normerrmap$jacobian(inp, with.id=FALSE)
-    # check the linmap submatrix
-    S1 <- compS[linmap$get_tar_idx(), linmap$get_src_idx()]
-    S2 <- linS[linmap$get_tar_idx(), linmap$get_src_idx()]
-    expect_equal(S1, S2)
-    # check the normerr submatrix
-    S1 <- compS[normerrmap$get_tar_idx(), normerrmap$get_src_idx(), drop=FALSE]
-    S2 <- normerrS[normerrmap$get_tar_idx(), normerrmap$get_src_idx(), drop=FALSE]
-    expect_equal(S1, S2)
-    # check if required blocks are zero
-    expect_true(all(compS[compmap$get_src_idx(), compmap$get_src_idx()] == 0))
-    expect_true(all(compS[compmap$get_tar_idx(), compmap$get_tar_idx()] == 0))
-  }
+test_that("numeric jacobian and analytic jacobian of nested map with nonlinear selfmap and with id contribution coincide", {
+  nestedmap <- create_compound_map()
+  nestedmap$setup(compound_params3)
+  inp <- 1:15
+  expres <- as.matrix(jacobian(nestedmap$propagate, inp, with.id=TRUE))
+  res <- as.matrix(nestedmap$jacobian(inp, with.id=TRUE))
+  dimnames(expres) <- dimnames(res) <- NULL
+  expect_equal(res, expres, tolerance=1e-6)
 })
 
 
-
-
-
+test_that("numeric jacobian and analytic jacobian of nested map with nonlinear selfmap and without id contribution coincide", {
+  nestedmap <- create_compound_map()
+  nestedmap$setup(compound_params3)
+  inp <- 1:15
+  expres <- as.matrix(jacobian(nestedmap$propagate, inp, with.id=FALSE))
+  res <- as.matrix(nestedmap$jacobian(inp, with.id=FALSE))
+  dimnames(expres) <- dimnames(res) <- NULL
+  expect_equal(res, expres, tolerance=1e-6)
+})

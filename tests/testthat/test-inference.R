@@ -82,6 +82,7 @@ test_that("Parts of posterior covariance matrix associated with independent vari
   is_indep <- is.na(obs)
   S <- linmod_map$jacobian(zpost, with.id=TRUE)
   expres <- solve(t(S[,is_indep]) %*% solve(U) %*% S[,is_indep])
+  # compare to obtained result
   res <- get_posterior_cov(linmod_map, zpost, U, obs, 1:3, 1:3)
   expect_equal(res, expres[1:3,1:3])
   res <- get_posterior_cov(linmod_map, zpost, U, obs, c(1,3,5), 2:4)
@@ -102,6 +103,7 @@ test_that("Parts of posterior covariance matrix associated with noise nodes of o
   is_obs <- !is.na(obs)
   S <- linmod_map$jacobian(zpost, with.id=TRUE)
   expres <- U - U %*% t(S[is_obs,]) %*% solve(S[is_obs,] %*% U %*% t(S[is_obs,])) %*% S[is_obs,] %*% U
+  # compare to obtained result
   res <- get_posterior_cov(linmod_map, zpost, U, obs, c(1,3,5,7,8), 2:4)
   expect_equal(res, expres[c(1,3,5,7,8),2:4])
 })
@@ -121,6 +123,7 @@ test_that("Parts of posterior covariance matrix correctly computed for determini
   is_obs <- !is.na(obs)
   S <- linmod_map$jacobian(zpost, with.id=TRUE)
   globexpres <- U - U %*% t(S[is_obs,]) %*% solve(S[is_obs,] %*% U %*% t(S[is_obs,])) %*% S[is_obs,] %*% U
+  # compare to obtained results
   res <- as.matrix(get_posterior_cov(linmod_map, zpost, U, obs, c(1,3,5,7,8), 2:4))
   expres <- as.matrix(globexpres[c(1,3,5,7,8), 2:4])
   expect_equal(res, expres)
@@ -129,4 +132,3 @@ test_that("Parts of posterior covariance matrix correctly computed for determini
   dimnames(res) <- dimnames(expres) <- NULL
   expect_equal(res, expres)
 })
-

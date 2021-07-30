@@ -1,3 +1,5 @@
+set.seed(15)
+
 truexs_dt <- data.table(node="true",
                         energy = 1:5,
                         data = 0,

@@ -1,3 +1,6 @@
+# for reproducibility of tests involving random numbers
+set.seed(23)
+
 # system definition
 
 sysdt <- data.table(

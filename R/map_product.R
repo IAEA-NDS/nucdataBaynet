@@ -3,9 +3,11 @@ create_product_map <- function() {
   map <- NULL
 
   setup <- function(params) {
-    stopifnot(params$mapname == getName())
+    stopifnot(params$maptype == getType())
     map <<- list(
+      maptype = params$maptype,
       mapname = params$mapname,
+      description = params$description,
       map_list = lapply(params$maps, create_map)
     )
     map[["src_idx"]] <<- sort(unique(unlist(lapply(map$map_list, function(x) x$get_src_idx()))))
@@ -14,8 +16,18 @@ create_product_map <- function() {
   }
 
 
-  getName <- function() {
+  getType <- function() {
     return("product_map")
+  }
+
+
+  getName <- function() {
+    return(map[["mapname"]])
+  }
+
+
+  getDescription <- function() {
+    return(map[["description"]])
   }
 
 
@@ -66,7 +78,9 @@ create_product_map <- function() {
 
   return(list(
     setup = setup,
+    getType = getType,
     getName = getName,
+    getDescription = getDescription,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

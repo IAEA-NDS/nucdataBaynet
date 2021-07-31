@@ -5,14 +5,16 @@ create_linmod_map <- function() {
   is_with_id <- FALSE
 
   setup <- function(params) {
-    stopifnot(params$mapname == getName())
+    stopifnot(params$maptype == getType())
     stopifnot(!is.unsorted(params$src_x))
     stopifnot(min(params$src_x) <= min(params$tar_x))
     stopifnot(max(params$src_x) >= max(params$tar_x))
-    stopifnot(all(c('mapname','src_idx','tar_idx','src_x','tar_x') %in% names(params)))
+    stopifnot(all(c('maptype','src_idx','tar_idx','src_x','tar_x') %in% names(params)))
     S <<- NULL
     map <<- list(
+      maptype = params$maptype,
       mapname = params$mapname,
+      description = params$description,
       src_idx = params$src_idx,
       tar_idx = params$tar_idx,
       src_x = params$src_x,
@@ -20,8 +22,16 @@ create_linmod_map <- function() {
     )
   }
 
-  getName <- function() {
+  getType <- function() {
     return("linmod_map")
+  }
+
+  getName <- function() {
+    return(map[["mapname"]])
+  }
+
+  getDescription <- function() {
+    return(map[["description"]])
   }
 
   get_src_idx <- function() {
@@ -62,7 +72,9 @@ create_linmod_map <- function() {
 
   list(
     setup = setup,
+    getType = getType,
     getName = getName,
+    getDescription = getDescription,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

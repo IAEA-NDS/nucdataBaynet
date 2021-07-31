@@ -5,11 +5,13 @@ create_normerr_map <- function() {
   is_with_id <- FALSE
 
   setup <- function(params) {
-    stopifnot(params$mapname == getName())
+    stopifnot(params$maptype == getType())
     stopifnot(!anyDuplicated(params$src_feat))
     S <<- NULL
     map <<- list(
+      maptype = params$maptype,
       mapname = params$mapname,
+      description = params$description,
       src_idx = params$src_idx,
       tar_idx = params$tar_idx,
       src_feat = params$src_feat,
@@ -17,8 +19,16 @@ create_normerr_map <- function() {
     )
   }
 
-  getName <- function() {
+  getType <- function() {
     "normerr_map"
+  }
+
+  getName <- function() {
+    return(map[["mapname"]])
+  }
+
+  getDescription <- function() {
+    return(map[["description"]])
   }
 
   get_src_idx <- function() {
@@ -50,7 +60,9 @@ create_normerr_map <- function() {
 
   list(
     setup = setup,
+    getType = getType,
     getName = getName,
+    getDescription = getDescription,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

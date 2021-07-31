@@ -36,7 +36,7 @@ dt[, IDX := seq_len(.N)]
 
 
 linmod_params <- list(
-  mapname = "linmod_map",
+  maptype = "linmod_map",
   src_idx = dt[node=="mod",IDX],
   tar_idx = dt[node=="mod2",IDX],
   src_x = dt[node=="mod",energy],
@@ -45,7 +45,7 @@ linmod_params <- list(
 
 
 nonlinear_params <- list(
-  mapname = "nonlinear_map",
+  maptype = "nonlinear_map",
   src_idx = dt[node=="mod2",IDX],
   tar_idx = dt[node=="exp",IDX],
   funname = "exp"
@@ -53,7 +53,7 @@ nonlinear_params <- list(
 
 
 normerr_params <- normerr_map <- list(
-  mapname = "normerr_map",
+  maptype = "normerr_map",
   src_idx = dt[node=="normerr",IDX],
   tar_idx = dt[node=="exp",IDX],
   src_feat = 1,
@@ -62,12 +62,12 @@ normerr_params <- normerr_map <- list(
 
 
 relnormerr_params <- list(
-  mapname = "product_map",
+  maptype = "product_map",
   maps = list(nonlinear_params, normerr_params)
 )
 
 compound_params <- list(
-  mapname = "compound_map",
+  maptype = "compound_map",
   maps = list(linmod_params, nonlinear_params, relnormerr_params)
 )
 

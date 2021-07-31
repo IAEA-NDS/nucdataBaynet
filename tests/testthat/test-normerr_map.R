@@ -1,4 +1,4 @@
-params <- list(mapname = "normerr_map",
+params <- list(maptype = "normerr_map",
                src_idx = 1:3,
                tar_idx = 6:10,
                src_feat = c(1,2,3),

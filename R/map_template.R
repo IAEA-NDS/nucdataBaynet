@@ -1,11 +1,21 @@
-create_mapname_map <- function() {
+create_maptype_map <- function() {
 
   setup <- function(params) {
     # TODO
   }
 
 
+  getType <- function() {
+    # TODO
+  }
+
+
   getName <- function() {
+    # TODO
+  }
+
+
+  getDescription <- function() {
     # TODO
   }
 
@@ -32,7 +42,9 @@ create_mapname_map <- function() {
 
   return(list(
     setup = setup,
+    getType = getType,
     getName = getName,
+    getDescription = getDescription,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

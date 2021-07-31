@@ -1,5 +1,5 @@
 normerr_params <- list(
-  mapname = "normerr_map",
+  maptype = "normerr_map",
   src_idx = 1,
   tar_idx = 6:10,
   src_feat = 1L,
@@ -8,7 +8,7 @@ normerr_params <- list(
 
 
 linmod_params <- list(
-  mapname = "linmod_map",
+  maptype = "linmod_map",
   src_idx = 2:5,
   tar_idx = 6:10,
   src_x = 11:14,
@@ -17,7 +17,7 @@ linmod_params <- list(
 
 
 compound_params <- list(
-  mapname = "compound_map",
+  maptype = "compound_map",
   maps = list(
     normerr_params,
     linmod_params
@@ -97,7 +97,7 @@ test_that("sensitivity matrix with id matrix correctly computed", {
 # test nested relationships
 
 linmod_params2 <- list(
-  mapname = "linmod_map",
+  maptype = "linmod_map",
   src_idx = 6:10,
   tar_idx = 11:15,
   src_x = c(12, 12.5, 13, 13.5, 14),
@@ -106,7 +106,7 @@ linmod_params2 <- list(
 
 
 compound_params2 <- list(
-  mapname = "compound_map",
+  maptype = "compound_map",
   maps = list(
     linmod_params2,
     linmod_params,
@@ -176,7 +176,7 @@ test_that("nested compound map jacobian with id contribution calculated correctl
 # test nested relationships including selfmaps
 
 nonlinear_params <- list(
-  mapname = "nonlinear_map",
+  maptype = "nonlinear_map",
   funname = "exp",
   src_idx = 11:15,
   tar_idx = 11:15
@@ -184,7 +184,7 @@ nonlinear_params <- list(
 
 
 compound_params3 <- list(
-  mapname = "compound_map",
+  maptype = "compound_map",
   maps = list(
     nonlinear_params,
     linmod_params2,

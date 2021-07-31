@@ -14,7 +14,7 @@ sysdt <- data.table(
 
 
 params <- list(
-  mapname = "linmod_map",
+  maptype = "linmod_map",
   src_idx = sysdt[type=="mod",idx],
   tar_idx = sysdt[type=="exp",idx],
   src_x = sysdt[type=="mod",en],

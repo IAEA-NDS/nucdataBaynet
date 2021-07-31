@@ -1,5 +1,6 @@
 create_compound_map <- function() {
 
+  mapinfo <- list()
   map_list <- list()
   pure_sources <- NULL
   pure_targets <- NULL
@@ -27,11 +28,28 @@ create_compound_map <- function() {
     pure_targets <<- which(is_dest)
 
     map_list <<- order_maps(maps)
+    mapinfo[["mapname"]] <- params[["mapname"]]
+    mapinfo[["description"]] <- params[["description"]]
+  }
+
+
+  getType <- function() {
+    return("compound_map")
   }
 
 
   getName <- function() {
-    return("compound_map")
+    return(mapinfo[["mapname"]])
+  }
+
+
+  getDescription <- function() {
+    return(mapinfo[["description"]])
+  }
+
+
+  getMaps <- function() {
+    return(map_list)
   }
 
 
@@ -46,13 +64,7 @@ create_compound_map <- function() {
 
 
   get_map_order <- function() {
-    return(unlist(lapply(map_list, function(x) x$getName())))
-  }
-
-  is_self_map <- function(map) {
-    numDups <- anyDuplicated(c(map$get_src_idx(),
-                               map$get_tar_idx()))
-    return(numDups > 0)
+    return(unlist(lapply(map_list, function(x) x$getType())))
   }
 
 
@@ -140,7 +152,10 @@ create_compound_map <- function() {
 
 
   list(setup = setup,
+       getType = getType,
        getName = getName,
+       getMaps = getMaps,
+       getDescription = getDescription,
        get_map_order = get_map_order,
        get_src_idx = get_src_idx,
        get_tar_idx = get_tar_idx,

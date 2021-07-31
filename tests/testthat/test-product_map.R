@@ -1,5 +1,5 @@
 linmod_params <- list(
-  mapname = "linmod_map",
+  maptype = "linmod_map",
   src_idx = 1:4,
   tar_idx = 6:10,
   src_x = 11:14,
@@ -7,14 +7,14 @@ linmod_params <- list(
 )
 
 
-normerr_params <- list(mapname = "normerr_map",
+normerr_params <- list(maptype = "normerr_map",
                src_idx = 5,
                tar_idx = 6:10,
                src_feat = 1,
                tar_feat = c(1,1,1,1,1))
 
 
-prod_params <- list(mapname = "product_map",
+prod_params <- list(maptype = "product_map",
                     maps = list(linmod_params, normerr_params))
 
 

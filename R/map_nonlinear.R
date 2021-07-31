@@ -3,19 +3,31 @@ create_nonlinear_map <- function() {
   map <- NULL
 
   setup <- function(params) {
-    stopifnot(params$mapname == getName())
+    stopifnot(params$maptype == getType())
     stopifnot(length(params$src_idx) == length(params$tar_idx))
     stopifnot(!is.unsorted(params$src_idx))
     stopifnot(!is.unsorted(params$tar_idx))
     stopifnot(params$funname == 'exp')
-    map <<- list(mapname = params$mapname,
+    map <<- list(maptype = params$maptype,
+                 mapname = params$mapname,
+                 description = params$description,
                  src_idx = params$src_idx,
                  tar_idx = params$tar_idx)
   }
 
 
-  getName <- function() {
+  getType <- function() {
     return("nonlinear_map")
+  }
+
+
+  getName <- function() {
+    return(map[["mapname"]])
+  }
+
+
+  getDescription <- function() {
+    return(map[["description"]])
   }
 
 
@@ -48,7 +60,9 @@ create_nonlinear_map <- function() {
 
   return(list(
     setup = setup,
+    getType = getType,
     getName = getName,
+    getDescription = getDescription,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

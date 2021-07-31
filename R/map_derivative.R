@@ -5,12 +5,14 @@ create_derivative_map <- function() {
   is_with_id <- FALSE
 
   setup <- function(params) {
-    stopifnot(all(c('mapname','src_idx','tar_idx','src_x','tar_x') %in% names(params)))
-    stopifnot(params$mapname == getName())
+    stopifnot(all(c('maptype','src_idx','tar_idx','src_x','tar_x') %in% names(params)))
+    stopifnot(params$maptype == getType())
     src_ord <- order(params$src_x)
     tar_ord <- order(params$tar_x)
     map <<- list(
+      maptype = params$maptype,
       mapname = params$mapname,
+      description = params$description,
       src_idx = params$src_idx[src_ord],
       tar_idx = params$tar_idx[tar_ord],
       src_x = params$src_x[src_ord],
@@ -21,9 +23,21 @@ create_derivative_map <- function() {
     stopifnot(all(map$src_idx[idx] < max(map$src_idx)))
   }
 
-  getName <- function() {
+
+  getType <- function() {
     return("derivative_map")
   }
+
+
+  getName <- function() {
+    return(map[["mapname"]])
+  }
+
+
+  getDescription <- function() {
+    return(map[["description"]])
+  }
+
 
   get_src_idx <- function() {
     return(map$src_idx)
@@ -60,7 +74,9 @@ create_derivative_map <- function() {
 
   list(
     setup = setup,
+    getType = getType,
     getName = getName,
+    getDescription = getDescription,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

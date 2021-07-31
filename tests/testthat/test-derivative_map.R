@@ -1,5 +1,5 @@
 params <- list(
-  mapname = "derivative_map",
+  maptype = "derivative_map",
   src_idx = 1:5,
   tar_idx = 6:10,
   src_x = 11:15,

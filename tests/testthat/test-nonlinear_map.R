@@ -1,5 +1,5 @@
 params <- list(
-  mapname = "nonlinear_map",
+  maptype = "nonlinear_map",
   src_idx = 1:5,
   tar_idx = 6:10,
   funname = "exp"

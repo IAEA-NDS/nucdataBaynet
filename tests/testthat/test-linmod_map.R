@@ -1,5 +1,5 @@
 params <- list(
-  mapname = "linmod_map",
+  maptype = "linmod_map",
   src_idx = 1:4,
   tar_idx = 6:10,
   src_x = 11:14,

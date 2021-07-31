@@ -8,7 +8,7 @@ test_that("all mappings have required methods", {
   for (idx in seq_along(map_creators)) {
     curname <- map_creator_names[idx]
     curmap <- map_creators[[idx]]()
-    expect_true(all(c("setup", "getName", "get_src_idx", "get_tar_idx",
+    expect_true(all(c("setup", "getName", "getDescription", "getType", "get_src_idx", "get_tar_idx",
                   "propagate", "jacobian") %in% names(curmap)),
                 label = paste0("mapping ", curname, " has all required methods"))
   }

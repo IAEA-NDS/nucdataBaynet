@@ -42,17 +42,35 @@ is_self_map <- function(map) {
 }
 
 
-get_network_structure <- function(maplist, node_names) {
-  unique_nodes <- unique(node_names)
-  node_idcs_map <- match(node_names, unique_nodes)
-  adjmat <- matrix(FALSE, nrow=length(unique_nodes),
+get_network_structure <- function(maplist, nodes, obs, nonlinear_ind=TRUE) {
+  unique_nodes <- unique(nodes)
+  is_observed <- rep(FALSE, length(unique_nodes))
+
+  node_idcs_map <- match(nodes, unique_nodes)
+  is_observed[node_idcs_map[!is.na(obs)]] <- TRUE
+  adjmat <- matrix(0, nrow=length(unique_nodes),
                    ncol=length(unique_nodes))
   for (curmap in maplist) {
     if (is_self_map(curmap)) { next }
     src_idx <- curmap$get_src_idx()
     tar_idx <- curmap$get_tar_idx()
-    adjmat[node_idcs_map[src_idx], node_idcs_map[tar_idx]] <- TRUE
+    src_nodes <- unique(node_idcs_map[src_idx])
+    tar_nodes <- unique(node_idcs_map[tar_idx])
+    adjmat[node_idcs_map[src_idx], node_idcs_map[tar_idx]] <- 1
+    if (length(src_nodes) > 1 && !curmap$is_linear() && nonlinear_ind) {
+      selmat1 <- upper.tri(adjmat, diag=FALSE)
+      selmat2 <- matrix(FALSE, nrow=length(unique_nodes),
+                        ncol=length(unique_nodes))
+      selmat2[src_nodes, src_nodes] <- TRUE
+      selmat <- selmat1 & selmat2
+      adjmat[selmat] <- 2
+    }
   }
   colnames(adjmat) <- rownames(adjmat) <- unique_nodes
-  return(adjmat)
+  grph <- graph_from_adjacency_matrix(adjmat, weighted="tmp")
+  E(grph)$lty <- ifelse(E(grph)$tmp == 1, "solid", "dashed")
+  E(grph)$arrow.mode <- ifelse(E(grph)$tmp == 1, ">", "-")
+  V(grph)$color <- ifelse(is_observed, "lightgray", "white")
+  V(grph)$observed <- is_observed
+  return(grph)
 }

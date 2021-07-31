@@ -31,6 +31,10 @@ create_normerr_map <- function() {
     return(map[["description"]])
   }
 
+  is_linear <- function() {
+    return(TRUE)
+  }
+
   get_src_idx <- function() {
     map$src_idx
   }
@@ -63,6 +67,7 @@ create_normerr_map <- function() {
     getType = getType,
     getName = getName,
     getDescription = getDescription,
+    is_linear = is_linear,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

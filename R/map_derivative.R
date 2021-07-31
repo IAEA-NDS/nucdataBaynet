@@ -39,6 +39,11 @@ create_derivative_map <- function() {
   }
 
 
+  is_linear <- function() {
+    return(TRUE)
+  }
+
+
   get_src_idx <- function() {
     return(map$src_idx)
   }
@@ -77,6 +82,7 @@ create_derivative_map <- function() {
     getType = getType,
     getName = getName,
     getDescription = getDescription,
+    is_linear = is_linear,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

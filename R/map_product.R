@@ -31,6 +31,11 @@ create_product_map <- function() {
   }
 
 
+  is_linear <- function() {
+    return(FALSE)
+  }
+
+
   get_src_idx <- function() {
     return(map[["src_idx"]])
   }
@@ -81,6 +86,7 @@ create_product_map <- function() {
     getType = getType,
     getName = getName,
     getDescription = getDescription,
+    is_linear = is_linear,
     get_src_idx = get_src_idx,
     get_tar_idx = get_tar_idx,
     propagate = propagate,

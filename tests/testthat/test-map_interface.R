@@ -1,7 +1,5 @@
-map_creator_names <- c("create_linearinterpol_map", "create_normerr_map",
-                       "create_compound_map", "create_derivative_map",
-                       "create_derivative2nd_map")
-map_creators <- lapply(map_creator_names, get, mode = "function")
+map_creators <- get_map_generators()
+map_creator_names <- names(map_creators)
 
 
 test_that("all mappings have required methods", {

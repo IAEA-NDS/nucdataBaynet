@@ -5,8 +5,8 @@ create_nonlinear_map <- function() {
   setup <- function(params) {
     stopifnot(params$maptype == getType())
     stopifnot(length(params$src_idx) == length(params$tar_idx))
-    stopifnot(!is.unsorted(params$src_idx))
-    stopifnot(!is.unsorted(params$tar_idx))
+    stopifnot(is.vector(params$src_idx))
+    stopifnot(is.vector(params$tar_idx))
     stopifnot(params$funname == 'exp')
     map <<- list(maptype = params$maptype,
                  mapname = params$mapname,

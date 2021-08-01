@@ -1,5 +1,5 @@
 linmod_params <- list(
-  maptype = "linmod_map",
+  maptype = "linearinterpol_map",
   src_idx = 1:4,
   tar_idx = 6:10,
   src_x = 11:14,
@@ -21,7 +21,7 @@ prod_params <- list(maptype = "product_map",
 test_that("product map propagates properly with with.id=FALSE", {
   prodmap <- create_product_map()
   prodmap$setup(prod_params)
-  linmod_map <- create_linmod_map()
+  linmod_map <- create_linearinterpol_map()
   linmod_map$setup(linmod_params)
   normerr_map <- create_normerr_map()
   normerr_map$setup(normerr_params)
@@ -37,7 +37,7 @@ test_that("product map propagates properly with with.id=FALSE", {
 test_that("product map propagates properly with with.id=TRUE", {
   prodmap <- create_product_map()
   prodmap$setup(prod_params)
-  linmod_map <- create_linmod_map()
+  linmod_map <- create_linearinterpol_map()
   linmod_map$setup(linmod_params)
   normerr_map <- create_normerr_map()
   normerr_map$setup(normerr_params)
@@ -53,7 +53,7 @@ test_that("product map propagates properly with with.id=TRUE", {
 test_that("product map propagates properly if one map yields zero values with with.id=FALSE", {
   prodmap <- create_product_map()
   prodmap$setup(prod_params)
-  linmod_map <- create_linmod_map()
+  linmod_map <- create_linearinterpol_map()
   linmod_map$setup(linmod_params)
   normerr_map <- create_normerr_map()
   normerr_map$setup(normerr_params)

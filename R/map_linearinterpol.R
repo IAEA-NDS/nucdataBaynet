@@ -1,4 +1,4 @@
-create_linmod_map <- function() {
+create_linearinterpol_map <- function() {
 
   map <- NULL
   S <- NULL
@@ -23,7 +23,7 @@ create_linmod_map <- function() {
   }
 
   getType <- function() {
-    return("linmod_map")
+    return("linearinterpol_map")
   }
 
   getName <- function() {

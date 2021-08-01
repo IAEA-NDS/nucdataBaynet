@@ -1,4 +1,4 @@
-map_creator_names <- c("create_linmod_map", "create_normerr_map",
+map_creator_names <- c("create_linearinterpol_map", "create_normerr_map",
                        "create_compound_map", "create_derivative_map",
                        "create_derivative2nd_map")
 map_creators <- lapply(map_creator_names, get, mode = "function")

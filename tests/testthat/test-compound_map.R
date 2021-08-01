@@ -8,7 +8,7 @@ normerr_params <- list(
 
 
 linmod_params <- list(
-  maptype = "linmod_map",
+  maptype = "linearinterpol_map",
   src_idx = 2:5,
   tar_idx = 6:10,
   src_x = 11:14,
@@ -46,7 +46,7 @@ test_that("compound_map propagate with id matrix works correctly", {
 
 
 test_that("sensitivity matrix without id matrix correctly computed", {
-  linmap <- create_linmod_map()
+  linmap <- create_linearinterpol_map()
   linmap$setup(linmod_params)
   normerrmap <- create_normerr_map()
   normerrmap$setup(normerr_params)
@@ -71,7 +71,7 @@ test_that("sensitivity matrix without id matrix correctly computed", {
 
 
 test_that("sensitivity matrix with id matrix correctly computed", {
-  linmap <- create_linmod_map()
+  linmap <- create_linearinterpol_map()
   linmap$setup(linmod_params)
   normerrmap <- create_normerr_map()
   normerrmap$setup(normerr_params)
@@ -97,7 +97,7 @@ test_that("sensitivity matrix with id matrix correctly computed", {
 # test nested relationships
 
 linmod_params2 <- list(
-  maptype = "linmod_map",
+  maptype = "linearinterpol_map",
   src_idx = 6:10,
   tar_idx = 11:15,
   src_x = c(12, 12.5, 13, 13.5, 14),

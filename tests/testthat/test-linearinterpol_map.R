@@ -1,5 +1,5 @@
 params <- list(
-  maptype = "linmod_map",
+  maptype = "linearinterpol_map",
   src_idx = 1:4,
   tar_idx = 6:10,
   src_x = 11:14,
@@ -7,8 +7,8 @@ params <- list(
 )
 
 
-test_that("linmod_map propagate without id matrix works correctly", {
-  map <- create_linmod_map()
+test_that("linearinterpol_map propagate without id matrix works correctly", {
+  map <- create_linearinterpol_map()
   map$setup(params)
   res <- map$propagate(c(21:24, rep(0,6)), with.id = FALSE)
   expect_equal(res[6:10], c(22, 22.5, 23, 23.5, 24))
@@ -16,8 +16,8 @@ test_that("linmod_map propagate without id matrix works correctly", {
 })
 
 
-test_that("linmod_map propagate with id matrix works correctly", {
-  map <- create_linmod_map()
+test_that("linearinterpol_map propagate with id matrix works correctly", {
+  map <- create_linearinterpol_map()
   map$setup(params)
   res <- map$propagate(c(21:24, rep(0,6)), with.id = TRUE)
   expect_equal(res[6:10], c(22, 22.5, 23, 23.5, 24))
@@ -25,8 +25,8 @@ test_that("linmod_map propagate with id matrix works correctly", {
 })
 
 
-test_that("expansion point of linmod_map does not impact Jacobian matrix", {
-  map <- create_linmod_map()
+test_that("expansion point of linearinterpol_map does not impact Jacobian matrix", {
+  map <- create_linearinterpol_map()
   map$setup(params)
   r1 <- 1:15
   r2 <- 31:45

@@ -36,7 +36,7 @@ dt[, IDX := seq_len(.N)]
 
 
 linmod_params <- list(
-  maptype = "linmod_map",
+  maptype = "linearinterpol_map",
   src_idx = dt[node=="mod",IDX],
   tar_idx = dt[node=="mod2",IDX],
   src_x = dt[node=="mod",energy],

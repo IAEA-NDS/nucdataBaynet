@@ -55,10 +55,10 @@ gls <- function(map, zprior, U, obs, zref=zprior, damp=0, ret.list=FALSE) {
 LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invcov=FALSE) {
 
   # LM parameters
-  reltol <- 1e-5
-  maxcount <- 200
+  reltol <- 1e-6
+  maxcount <- 750
   mincount <- 10
-  tau <- 1e-8
+  tau <- 1e-10
 
   adjustable <- diag(U) > 0
   observed <- !is.na(obs)
@@ -82,10 +82,10 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invco
   cnt <- 0
   last_reject <- TRUE
   rel_gain <- Inf
+  relgain_hist <- rep(Inf, 10)
   while (cnt < mincount ||
          (cnt < maxcount &&
-          abs(relgain) > 1e-14 &&
-          !(last_reject == FALSE && relgain <= reltol))) {
+          max(relgain_hist) > reltol)) {
     cnt <- cnt + 1
     zprop <- gls(map, zprior, U, obs, zref=zref, damp=lambda)
     # calculate improvement according to linear approximation
@@ -97,8 +97,11 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invco
     dex[adjobs] <- dex[adjobs] - excess
     fex <- as.vector(crossprod(dex, solve(Ured, dex)))
     # calculate the gain
-    gain <- (last_fex - fex) / (last_fapx - fapx)
+    gain <- (last_fex - fex) / (abs(last_fapx - fapx) + 1e-15)
     relgain <- (last_fex - fex) / fex
+    if (gain > 0) {
+      relgain_hist <- c(tail(relgain_hist, n=9), relgain)
+    }
     # adjust damping
     if (gain < 0.25) {
       lambda <- lambda * 2
@@ -117,7 +120,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invco
     # print information
     if (print.info) {
       cat(paste0("iter ", cnt, " - gain: ", gain, " - relgain: ", relgain, " - fex: ", last_fex, "\n"))
-      cat(paste0("last_reject: ", last_reject, "\n"))
+      cat(paste0("last_reject: ", last_reject, " - lambda: ", lambda, "\n"))
     }
   }
 

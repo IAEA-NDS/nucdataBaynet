@@ -7,7 +7,9 @@ create_compound_map <- function() {
 
   setup <- function(params) {
 
-    maps <- lapply(params$maps, create_map)
+    maps <- lapply(params$maps, function(curparams) {
+        return(create_map(curparams))
+    })
     max_idx <- 0
     # ensure no duplicates in indices
     for (i in seq_along(maps)) {
@@ -15,7 +17,13 @@ create_compound_map <- function() {
         stop(paste("Duplicate source indices in map",i))
       if (anyDuplicated(maps[[i]]$get_tar_idx()))
         stop(paste("Duplicate target indices in map", j))
-      max_idx <- max(max_idx, maps[[i]]$get_src_idx(), maps[[i]]$get_tar_idx())
+      tryCatch({
+        max_idx <- max(max_idx, maps[[i]]$get_src_idx(), maps[[i]]$get_tar_idx())
+      }, error = function(e) {
+        e$message <- paste0(e$message, " (in map with name ", maps[[i]]$getName(),
+                            " of type ", maps[[i]]$getType())
+        stop(e)
+      })
     }
     # determine indices which are pure sources
     is_dest <- rep(FALSE, max_idx)

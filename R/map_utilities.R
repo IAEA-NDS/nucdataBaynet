@@ -1,5 +1,12 @@
 create_map <- function(params) {
-  map_generator <- get_map_generator(params$maptype)
+  stopifnot("maptype" %in% names(params))
+  tryCatch({
+    map_generator <- get_map_generator(params$maptype)
+  }, error = function(e) {
+    e$message <- paste0(e$message, " (during creation of map with name ",
+                        params$mapname, " of type ", params$maptype)
+    stop(e)
+  })
   map <- map_generator()
   map$setup(params)
   return(map)

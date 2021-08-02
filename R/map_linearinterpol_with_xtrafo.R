@@ -4,6 +4,7 @@ create_linearinterpol_with_xtrafo_map <- function() {
   xtrafo_params <- NULL
   last_shiftx <- NULL
   last_scalex <- NULL
+  last_src_x <- NULL
   last_with.id <- NULL
   energyderiv_coeffs <- NULL
 
@@ -63,16 +64,7 @@ create_linearinterpol_with_xtrafo_map <- function() {
 
 
   jacobian <- function(x, with.id=TRUE) {
-    is_updated <- update_linmap(x)
-    if (is_updated) {
-      src_x <- linmap$get_src_x()
-      tar_x <- linmap$get_tar_x()
-      low_idx <- findInterval(tar_x, src_x, rightmost.closed=TRUE)
-      high_idx <- low_idx + 1
-      stopifnot(all(low_idx >= 1) && all(high_idx <= length(src_x)))
-      xdiff <- src_x[high_idx] - src_x[low_idx]
-      energyderiv_coeffs <<- (-x[low_idx] + x[high_idx]) / xdiff
-    }
+    update_linmap(x)
     tar_idx <- linmap$get_tar_idx()
     S <- linmap$jacobian(x, with.id)
     matidcs_sel <- cbind(rep(tar_idx, 2),
@@ -88,12 +80,25 @@ create_linearinterpol_with_xtrafo_map <- function() {
   update_linmap <- function(x) {
     cur_shiftx <- x[xtrafo_params$shiftx_idx]
     cur_scalex <- x[xtrafo_params$scalex_idx]
+    src_idx <- linmap$get_src_idx()
     if (!isTRUE(last_shiftx == cur_shiftx) ||
-        !isTRUE(last_scalex == cur_scalex)) {
+        !isTRUE(last_scalex == cur_scalex) ||
+        !isTRUE(all(x[src_idx] == last_src_x))) {
+      # compute target xs derivatives with respect to target energy
+      src_x <- linmap$get_src_x()
+      tar_x <- linmap$get_tar_x()
+      low_idx <- findInterval(tar_x, src_x, rightmost.closed=TRUE)
+      high_idx <- low_idx + 1
+      stopifnot(all(low_idx >= 1) && all(high_idx <= length(src_x)))
+      xdiff <- src_x[high_idx] - src_x[low_idx]
+      energyderiv_coeffs <<- (-x[src_idx[low_idx]] + x[src_idx[high_idx]]) / xdiff
+      # update the linearinterpolation map
       claimed_tar_x <- xtrafo_params$claimed_tar_x
       linmap$set_tar_x(cur_shiftx + cur_scalex * claimed_tar_x)
+      # keep track of current transformation parameters
       last_shiftx <<- cur_shiftx
       last_scalex <<- cur_scalex
+      last_src_x <<- x[src_idx]
       return(TRUE)
     }
     return(FALSE)

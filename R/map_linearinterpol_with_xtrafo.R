@@ -30,12 +30,12 @@ create_linearinterpol_with_xtrafo_map <- function() {
 
 
   getName <- function() {
-    return(map[["mapname"]])
+    return(linmap$getName())
   }
 
 
   getDescription <- function() {
-    return(map[["description"]])
+    return(linmap$getDescription())
   }
 
 

@@ -4,6 +4,7 @@ get_map_generators <- function(maptypes=character(0)) {
     "derivative_map" = create_derivative_map,
     "derivative2nd_map" = create_derivative2nd_map,
     "linearinterpol_map" = create_linearinterpol_map,
+    "linearinterpol_with_xtrafo_map" = create_linearinterpol_with_xtrafo_map,
     "nonlinear_map" = create_nonlinear_map,
     "normerr_map" = create_normerr_map,
     "product_map" = create_product_map

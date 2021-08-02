@@ -94,7 +94,8 @@ create_linearinterpol_with_xtrafo_map <- function() {
       energyderiv_coeffs <<- (-x[src_idx[low_idx]] + x[src_idx[high_idx]]) / xdiff
       # update the linearinterpolation map
       claimed_tar_x <- xtrafo_params$claimed_tar_x
-      linmap$set_tar_x(cur_shiftx + cur_scalex * claimed_tar_x)
+      new_tar_x <- cur_shiftx + cur_scalex * claimed_tar_x
+      linmap$set_tar_x(new_tar_x)
       # keep track of current transformation parameters
       last_shiftx <<- cur_shiftx
       last_scalex <<- cur_scalex

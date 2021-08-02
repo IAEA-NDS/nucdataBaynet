@@ -1,8 +1,8 @@
 linint_params <- list(
   maptype = "linearinterpol_map",
-  src_idx = 1:4,
+  src_idx = 2:5,
   tar_idx = 6:10,
-  src_x = c(11, 13, 15, 20),
+  src_x = c(11, 13, 16, 20),
   tar_x = c(12, 12.5, 13, 13, 13.3)
 )
 
@@ -18,7 +18,7 @@ test_that("propagate of linearinterpol_with_xtrafo_map without scale/shift yield
   linint_map$setup(linint_params)
   linint_xtrafo_map <- create_linearinterpol_with_xtrafo_map()
   linint_xtrafo_map$setup(linint_xtrafo_params)
-  linint_inp <- 1:10
+  linint_inp <- exp(seq(log(1), log(10), length=10))
   linint_xtrafo_inp <- c(linint_inp, c(0, 1))
   # with.id=FALSE
   expres <- linint_map$propagate(linint_inp, with.id=FALSE)
@@ -40,7 +40,7 @@ test_that("propagate of linearinptol_with_xtrafo_map with shift and scale identi
   mod_linint_map$setup(mod_linint_params)
   linint_xtrafo_map <- create_linearinterpol_with_xtrafo_map()
   linint_xtrafo_map$setup(linint_xtrafo_params)
-  mod_linint_inp <- 1:10
+  mod_linint_inp <- exp(seq(log(1), log(10), length=10))
   linint_xtrafo_inp <- c(mod_linint_inp, c(shiftx, scalex))
   # with.id=FALSE
   expres <- mod_linint_map$propagate(mod_linint_inp, with.id=FALSE)
@@ -56,7 +56,7 @@ test_that("propagate of linearinptol_with_xtrafo_map with shift and scale identi
 test_that("jacobian of linearinterpol_with_xtrafo_map coincides with numerical jacobian of propagate function", {
   shiftx <- 0.1
   scalex <- 1.05
-  inp <- c(1:10, shiftx, scalex)
+  inp <- c(exp(seq(log(1), log(10), length=10)), shiftx, scalex)
   linint_xtrafo_map <- create_linearinterpol_with_xtrafo_map()
   linint_xtrafo_map$setup(linint_xtrafo_params)
   linint_xtrafo_map$propagate(inp)

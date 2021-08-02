@@ -72,7 +72,7 @@ create_compound_map <- function() {
 
 
   get_map_order <- function() {
-    return(unlist(lapply(map_list, function(x) x$getType())))
+    return(unlist(lapply(map_list, function(x) x$getName())))
   }
 
 

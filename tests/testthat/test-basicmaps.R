@@ -28,7 +28,7 @@ test_that("get_convolute_rect_matrix yields correct result if no segment complet
   tar_x <- 50
   winsize <- 30
   vals <- seq_along(src_x)
-  S <- get_convolute_rect_matrix(src_x, tar_x, 30)
+  S <- get_convolute_rect_matrix(src_x, tar_x, winsize)
   aug_src_x <- sort(c(src_x, tar_x-winsize/2, tar_x+winsize/2))
   aug_vals <- approx(src_x, vals, xout=aug_src_x)$y
   xdiff <- aug_src_x[-1] - head(aug_src_x, n=-1)

@@ -43,6 +43,26 @@ test_that("get_convolute_rect_matrix yields correct result if no segment complet
 })
 
 
+test_that("get_convolute_rect_matrix yields correct result if window completely in one segment", {
+  src_x <- c(1, 100)
+  tar_x <- 50
+  winsize <- 50
+  vals <- c(1, 100)
+  S <- get_convolute_rect_matrix(src_x, tar_x, winsize)
+  aug_src_x <- sort(c(src_x, tar_x-winsize/2, tar_x+winsize/2))
+  aug_vals <- approx(src_x, vals, xout=aug_src_x)$y
+  xdiff <- aug_src_x[-1] - head(aug_src_x, n=-1)
+  c1 <- head(aug_vals, n=-1) * xdiff/2
+  c2 <- aug_vals[-1] * xdiff/2
+  area <- c1 + c2
+  cumarea <- c(0, cumsum(area))
+  idcs <- findInterval(tar_x+c(-winsize,winsize)/2, aug_src_x)
+  expres <- diff(cumarea[idcs])
+  res <- as.vector(S %*% vals)
+  expect_equal(res, expres)
+})
+
+
 test_that("compound convolution map for several points equals sum of individual convolution maps", {
   set.seed(27)
   src_x <- cumsum(runif(30, min=3, max=5))

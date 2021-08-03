@@ -60,6 +60,5 @@ get_convolute_rect_derivative <- function(src_x, src_y, tar_x, winsize) {
            src_y[min_idx+1] * (tar_x_min - src_x[min_idx])) / (src_x[min_idx+1] - src_x[min_idx])
   f2 <- (src_y[max_idx] * (src_x[max_idx+1] - tar_x_max) +
          src_y[max_idx+1] * (tar_x_max - src_x[max_idx])) / (src_x[max_idx+1] - src_x[max_idx])
-  deriv <- (f1 + f2) / 2
-  return(deriv)
+  return(list(flo=f1, fhi=f2))
 }

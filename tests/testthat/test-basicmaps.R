@@ -66,6 +66,7 @@ test_that("convolute_rect_derivative conincides with numerical jacobian", {
     as.vector(get_convolute_rect_matrix(src_x, tar_x, winsize=x) %*% vals)
   }
   expres <- as.vector(jacobian(fun, 30))
-  res <- get_convolute_rect_derivative(src_x, vals, tar_x, 30)
+  tmpres <- get_convolute_rect_derivative(src_x, vals, tar_x, 30)
+  res <- (tmpres$flo + tmpres$fhi)/2
   expect_equal(res, expres)
 })

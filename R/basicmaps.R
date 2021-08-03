@@ -11,6 +11,19 @@ get_convolute_rect_matrix <- function(src_x, tar_x, winsize,
   loc_tar_idx <- seq_along(tar_x)
   min_idx <- findInterval(tar_x_min, src_x) + 1
   max_idx <- findInterval(tar_x_max, src_x)
+  in_several_segments <- min_idx <= max_idx
+  # save the original specifications
+  orig_min_idx <- min_idx
+  orig_max_idx <- max_idx
+  orig_loc_tar_idx <- loc_tar_idx
+  orig_tar_x_min <- tar_x_min
+  orig_tar_x_max <- tar_x_max
+  # remove the target points in one segment and treat them specially
+  min_idx <- orig_min_idx[in_several_segments]
+  max_idx <- orig_max_idx[in_several_segments]
+  loc_tar_idx <- orig_loc_tar_idx[in_several_segments]
+  tar_x_min <- tar_x_min[in_several_segments]
+  tar_x_max <- tar_x_max[in_several_segments]
   # for all segments of src_x completely inside apply simpson integration rule
   xdiff <- src_x[-1] - head(src_x, n=-1)
   coeff <- xdiff/2
@@ -39,11 +52,36 @@ get_convolute_rect_matrix <- function(src_x, tar_x, winsize,
   # multiplication to get integral
   c1hi <- (1+c1hi) * xrealdiff/2
   c2hi <- c2hi * xrealdiff/2
+
+  # now calculate the coefficients for convolutions being completely in one segment of src_x
+  tar_x_min <- orig_tar_x_min[!in_several_segments]
+  tar_x_max <- orig_tar_x_max[!in_several_segments]
+  ione <- orig_loc_tar_idx[!in_several_segments]
+  idx <- orig_max_idx[!in_several_segments]
+  dmesh <- src_x[idx+1] - src_x[idx]
+  # coeffs due to linear interpolation
+  c1one <- ((src_x[idx+1] - tar_x_max) + (src_x[idx+1] - tar_x_min)) / dmesh
+  c2one <- ((tar_x_max - src_x[idx]) + (tar_x_min - src_x[idx])) / dmesh
+  # integration factors in trapezoidal rule
+  c1one <- c1one * (tar_x_max - tar_x_min)/2
+  c2one <- c2one * (tar_x_max - tar_x_min)/2
+
   # put everything together
-  convmat <- sparseMatrix(i = tar_idx[c(rep(imi, 2), rep(ilo, 2), rep(ihi, 2))],
-               j = src_idx[c(jmi, jmi+1, jlo-1, jlo, jhi, jhi+1)],
-               x = c(rep(x, 2), c1lo, c2lo, c1hi, c2hi),
-               dims=dims)
+  convmat <- sparseMatrix(
+    i = tar_idx[c(rep(imi, 2),
+                  rep(ilo, 2),
+                  rep(ihi, 2),
+                  rep(ione, 2)
+                  )],
+    j = src_idx[c(jmi, jmi+1,
+                  jlo-1, jlo,
+                  jhi, jhi+1,
+                  idx, idx+1)],
+    x = c(rep(x, 2),
+          c1lo, c2lo,
+          c1hi, c2hi,
+          c1one, c2one),
+    dims=dims)
   return(convmat)
 }
 

@@ -52,11 +52,12 @@ gls <- function(map, zprior, U, obs, zref=zprior, damp=0, ret.list=FALSE) {
 }
 
 
-LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invcov=FALSE) {
+LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE,
+                   ret.invcov=FALSE) {
 
   # LM parameters
   reltol <- 1e-6
-  maxcount <- 750
+  maxcount <- 100
   mincount <- 10
   tau <- 1e-10
 
@@ -92,7 +93,22 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, ret.invco
     dapx <- zprop[adjustable] - zprior[adjustable]
     fapx <- as.vector(crossprod(dapx, solve(Ured, dapx)))
     # calculate improvement according to exact nonlinear map
-    excess <- map$propagate(zprop)[observed] - obs[observed]
+    fun_error <- FALSE
+    tryCatch({
+      excess <- map$propagate(zprop)[observed] - obs[observed]
+    }, error = function(e) {
+      fun_error <<- TRUE
+    })
+    if (fun_error) {
+      last_reject <- TRUE
+      gain <- -Inf
+      lambda <- lambda * 10
+      if (print.info) {
+        cat(paste0("iter ", cnt, " - objective function crashed with proposed parameters\n"))
+        cat(paste0("last_reject: ", last_reject, " - lambda: ", lambda, "\n"))
+      }
+      next
+    }
     dex <- dapx
     dex[adjobs] <- dex[adjobs] - excess
     fex <- as.vector(crossprod(dex, solve(Ured, dex)))

@@ -30,6 +30,8 @@ get_convolute_rect_matrix <- function(src_x, tar_x, winsize,
   imi <- sequence(max_idx-min_idx, loc_tar_idx, by=0L)
   jmi <- sequence(max_idx-min_idx, min_idx, by=1)
   x <- (src_x[jmi+1] - src_x[jmi])/2
+  # divide to go from area to average value
+  x <- x / (tar_x_max - tar_x_min)
   # edge correction lower bound
   xmeshdiff <- src_x[min_idx] - src_x[min_idx-1]
   xrealdiff <- src_x[min_idx] - tar_x_min
@@ -41,6 +43,8 @@ get_convolute_rect_matrix <- function(src_x, tar_x, winsize,
   # multiplication to get integral
   c1lo <- c1lo * xrealdiff/2
   c2lo <- (1+c2lo) * xrealdiff/2
+  c1lo <- c1lo / (tar_x_max - tar_x_min)
+  c2lo <- c2lo / (tar_x_max - tar_x_min)
   # edge correction upper bound
   xmeshdiff <- src_x[max_idx+1] - src_x[max_idx]
   xrealdiff <- tar_x_max - src_x[max_idx]
@@ -52,7 +56,8 @@ get_convolute_rect_matrix <- function(src_x, tar_x, winsize,
   # multiplication to get integral
   c1hi <- (1+c1hi) * xrealdiff/2
   c2hi <- c2hi * xrealdiff/2
-
+  c1hi <- c1hi / (tar_x_max - tar_x_min)
+  c2hi <- c2hi / (tar_x_max - tar_x_min)
   # now calculate the coefficients for convolutions being completely in one segment of src_x
   tar_x_min <- orig_tar_x_min[!in_several_segments]
   tar_x_max <- orig_tar_x_max[!in_several_segments]
@@ -65,6 +70,9 @@ get_convolute_rect_matrix <- function(src_x, tar_x, winsize,
   # integration factors in trapezoidal rule
   c1one <- c1one * (tar_x_max - tar_x_min)/2
   c2one <- c2one * (tar_x_max - tar_x_min)/2
+  # apply multiplication to get average value
+  c1one <- c1one / (tar_x_max - tar_x_min)
+  c2one <- c2one / (tar_x_max - tar_x_min)
 
   # put everything together
   convmat <- sparseMatrix(

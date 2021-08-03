@@ -3,8 +3,6 @@ create_convolution_with_xtrafo_map <- function() {
   map_params <- NULL
 
   S <- NULL
-  flo <- NULL
-  fhi <- NULL
   last_winsize <- NULL
   last_shiftx <- NULL
   last_scalex <- NULL

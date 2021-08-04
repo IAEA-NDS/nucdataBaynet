@@ -3,10 +3,13 @@ create_convolution_with_xtrafo_map <- function() {
   map_params <- NULL
 
   S <- NULL
-  last_winsize <- NULL
-  last_shiftx <- NULL
-  last_scalex <- NULL
-  last_src_y <- NULL
+  last_winsize <- NA
+  last_shiftx <- NA
+  last_scalex <- NA
+  last_src_y <- NA
+  last_tar_x <- NA
+  last_prop_y <- NA
+
   need_energy_derivatives <- FALSE
   energy_deriv_info <- NULL
 
@@ -75,9 +78,9 @@ create_convolution_with_xtrafo_map <- function() {
   propagate <- function(x, with.id=TRUE) {
     update_map(x)
     if (with.id) {
-      return(as.vector(x + S %*% x))
+      return(as.vector(x + last_prop_y))
     } else {
-      return(as.vector(S %*% x))
+      return(last_prop_y)
     }
   }
 
@@ -90,20 +93,30 @@ create_convolution_with_xtrafo_map <- function() {
     tar_idx <- map_params[["tar_idx"]]
     dinfo <- energy_deriv_info
     winsize_idx <- map_params[["winsize_idx"]]
+    winsize <- last_winsize
+    tar_x <- last_tar_x
+    src_x <- map_params[["src_x"]]
+    tar_x_min <- tar_x - last_winsize / 2
+    tar_x_max <- tar_x + last_winsize / 2
+    Fval <- last_prop_y[tar_idx]
     if (!is.null(winsize_idx)) {
       col_idcs <- c(col_idcs, winsize_idx)
-      mat_vals <- cbind(mat_vals, (dinfo$flo + dinfo$fhi) / 2)
+      deriv <- (dinfo$flo + dinfo$fhi) / 2 / winsize
+      deriv <- deriv - Fval / winsize
+      mat_vals <- cbind(mat_vals, deriv)
     }
     shiftx_idx <- map_params[["shiftx_idx"]]
     if (!is.null(shiftx_idx)) {
       col_idcs <- c(col_idcs, shiftx_idx)
-      mat_vals <- cbind(mat_vals, (-dinfo$flo + dinfo$fhi))
+      deriv <- (-dinfo$flo + dinfo$fhi) / winsize
+      mat_vals <- cbind(mat_vals, deriv)
     }
     scalex_idx <- map_params[["scalex_idx"]]
     if (!is.null(scalex_idx)) {
       col_idcs <- c(col_idcs, scalex_idx)
       orig_tar_x <- map_params[["orig_tar_x"]]
-      mat_vals <- cbind(mat_vals, (-dinfo$flo*orig_tar_x + dinfo$fhi*orig_tar_x))
+      deriv <- (-dinfo$flo*orig_tar_x + dinfo$fhi*orig_tar_x) / winsize
+      mat_vals <- cbind(mat_vals, deriv)
     }
     Scur <- S
     if (!is.null(mat_vals)) {
@@ -129,11 +142,12 @@ create_convolution_with_xtrafo_map <- function() {
     cur_src_y <- x[map_params[["src_idx"]]]
 
     # any change since last call
+    src_y_changed <- !isTRUE(all(last_src_y == cur_src_y))
     if (is.null(S) || (need_energy_derivatives && (
       !isTRUE(last_winsize == cur_winsize) ||
       !isTRUE(last_shiftx == cur_shiftx) ||
       !isTRUE(last_scalex == cur_scalex) ||
-      !isTRUE(all(last_src_y == cur_src_y))))) {
+      src_y_changed))) {
 
       src_x <- map_params[["src_x"]]
       src_idx <- map_params[["src_idx"]]
@@ -150,6 +164,10 @@ create_convolution_with_xtrafo_map <- function() {
       last_shiftx <<- cur_shiftx
       last_scalex <<- cur_scalex
       last_src_y <<- cur_src_y
+      last_tar_x <<- new_tar_x
+      last_prop_y <<- as.vector(S %*% x)
+    } else if (src_y_changed) {
+      last_prop_y <<- as.vector(S %*% x)
     }
   }
 

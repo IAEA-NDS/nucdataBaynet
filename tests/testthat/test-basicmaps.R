@@ -100,3 +100,36 @@ test_that("convolute_rect_derivative conincides with numerical jacobian", {
   res <- res - Fval / (tar_x_max - tar_x_min)
   expect_equal(res, expres)
 })
+
+
+test_that("convolute_rect_derivative conincides with numerical jacobian #2", {
+
+  src_idx = c(4,10,6,9,2)
+  src_x = c(1,4,50,27,98)
+  tar_idx = c(11, 14, 12)
+  tar_x = c(27, 56, 12) # problem: c(28.6, 56, 12), # problem: c(17.8, 56, 12), #c(27, 56, 12),
+  # bring into order
+  src_ord <- order(src_x)
+  src_idx <- src_idx[src_ord]
+  src_x <- src_x[src_ord]
+
+  winsize <- 12
+  shiftx <- 1.5
+  scalex <- 0.1
+  new_tar_x <- shiftx + (1+scalex) * tar_x
+
+  set.seed(30)
+  tmp <- runif(20, min=1, max=5)
+  vals <- tmp[src_idx]
+
+  fun <- function(x) {
+    as.vector(get_convolute_rect_matrix(src_x, new_tar_x, winsize=x) %*% vals)
+  }
+  Fval <- fun(winsize)
+  expres <- as.vector(jacobian(fun, winsize))
+  tmpres <- get_convolute_rect_derivative(src_x, vals, new_tar_x, winsize)
+  res <- (tmpres$flo + tmpres$fhi)/2 / winsize
+  res <- res - Fval / winsize
+  expect_equal(res, expres)
+})
+

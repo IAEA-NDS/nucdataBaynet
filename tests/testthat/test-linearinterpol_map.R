@@ -34,7 +34,6 @@ test_that("index shuffling of src_idx and tar_idx produce the expected permutate
 })
 
 
-
 test_that("linearinterpol_map propagate without id matrix works correctly", {
   map <- create_linearinterpol_map()
   map$setup(params)

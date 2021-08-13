@@ -116,3 +116,15 @@ test_that("product map evaluates jacobian correctly if zero elements present wit
   dimnames(res) <- NULL
   expect_equal(res, expres)
 })
+
+
+test_that("product map returns the correct source and target indices", {
+  prodmap <- create_product_map()
+  prodmap$setup(prod_params)
+  res <- prodmap$get_src_idx()
+  expres <- sort(unique(c(linmod_params$src_idx, normerr_params$src_idx)))
+  expect_equal(res, expres)
+  res <- prodmap$get_tar_idx()
+  expres <- sort(unique(c(linmod_params$tar_idx, normerr_params$tar_idx)))
+  expect_equal(res, expres)
+})

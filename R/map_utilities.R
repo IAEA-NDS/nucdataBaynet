@@ -1,5 +1,8 @@
 create_map <- function(params) {
-  stopifnot("maptype" %in% names(params))
+  if (! "maptype" %in% names(params)) {
+    print(params)
+    stop(paste0("maptype missing in parameters of map named '", params$mapname, "'"))
+  }
   tryCatch({
     map_generator <- get_map_generator(params$maptype)
   }, error = function(e) {

@@ -152,10 +152,16 @@ create_convolution_with_xtrafo_map <- function() {
       src_x <- map_params[["src_x"]]
       src_idx <- map_params[["src_idx"]]
       new_tar_x <- cur_shiftx + (1+cur_scalex) * map_params[["orig_tar_x"]]
+      tryCatch({
       S <<- get_convolute_rect_matrix(src_x, new_tar_x, cur_winsize,
                                       src_idx = map_params[["src_idx"]],
                                       tar_idx = get_tar_idx(),
                                       dims = rep(length(x), 2))
+      }, error = function(e) {
+        e$message <- paste0(e$message, " (in map with name ", getName(),
+                            " and type ", getType(), ")")
+        stop(e)
+      })
       if (need_energy_derivatives) {
         energy_deriv_info <<- get_convolute_rect_derivative(src_x, x[src_idx],
                                                             new_tar_x, cur_winsize)

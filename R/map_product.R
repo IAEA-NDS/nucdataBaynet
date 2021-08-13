@@ -4,6 +4,7 @@ create_product_map <- function() {
 
   setup <- function(params) {
     stopifnot(params$maptype == getType())
+    stopifnot(!is.null(params$maps))
     map <<- list(
       maptype = params$maptype,
       mapname = params$mapname,

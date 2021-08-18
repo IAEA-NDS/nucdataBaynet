@@ -52,14 +52,20 @@ gls <- function(map, zprior, U, obs, zref=zprior, damp=0, ret.list=FALSE) {
 }
 
 
-LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE,
-                   ret.invcov=FALSE) {
+LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_idcs = NULL,
+                   ret.invcov=FALSE, control=list()) {
 
   # LM parameters
-  reltol <- 1e-6
-  maxcount <- 100
-  mincount <- 10
-  tau <- 1e-10
+  defcontrol = list(
+    reltol = 1e-6, maxcount = 100, mincount = 10, tau = 1e-10,
+    reltol_steps = 3, reltol2 = 1e-12)
+  control <- modifyList(defcontrol, control)
+
+  reltol <- control$reltol
+  reltol2 <- control$reltol2
+  maxcount <- control$maxcount
+  mincount <- control$mincount
+  tau <- control$tau
 
   adjustable <- diag(U) > 0
   observed <- !is.na(obs)
@@ -83,12 +89,19 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE,
   cnt <- 0
   last_reject <- TRUE
   rel_gain <- Inf
-  relgain_hist <- rep(Inf, 10)
+  relgain_hist <- rep(Inf, control$reltol_steps)
   while (cnt < mincount ||
          (cnt < maxcount &&
-          max(relgain_hist) > reltol)) {
+          max(relgain_hist) > abs(reltol) &&
+          abs(relgain) > reltol2)) {
     cnt <- cnt + 1
     zprop <- gls(map, zprior, U, obs, zref=zref, damp=lambda)
+    if (!is.null(adjust_idcs)) {
+      tmp <- zprop
+      zprop <- zref
+      zprop[adjust_idcs] <- tmp[adjust_idcs]
+      zprop[observed] <- tmp[observed]
+    }
     # calculate improvement according to linear approximation
     dapx <- zprop[adjustable] - zprior[adjustable]
     fapx <- as.vector(crossprod(dapx, solve(Ured, dapx)))
@@ -119,7 +132,9 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE,
       relgain_hist <- c(tail(relgain_hist, n=9), relgain)
     }
     # adjust damping
-    if (gain < 0.25) {
+    if (gain < -2) {
+      lambda <- lambda * 2^5
+    } else if (gain < 0.25) {
       lambda <- lambda * 2
     } else if (gain > 0.75) {
       lambda <- lambda / 3

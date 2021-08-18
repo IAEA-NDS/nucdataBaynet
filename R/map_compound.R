@@ -7,6 +7,7 @@ create_compound_map <- function() {
 
   setup <- function(params) {
 
+    stopifnot(!is.null(params$maps))
     maps <- lapply(params$maps, function(curparams) {
         return(create_map(curparams))
     })

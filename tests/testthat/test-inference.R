@@ -12,6 +12,15 @@ sysdt <- data.table(
   obs = c(rep(NA,5), rep(4,5))
 )
 
+sysdt2 <- data.table(
+  idx = 1:10,
+  type = c(rep("mod", 5), rep("exp", 5)),
+  en = c(seq(0, 10, length=5), seq(1, 9, length=5)),
+  data = c(1:10),
+  unc = c(rep(10, 5), rep(0, 3), rep(1, 2)),
+  obs = c(rep(NA,8), rep(4,2))
+)
+
 
 params <- list(
   maptype = "linearinterpol_map",
@@ -107,8 +116,29 @@ test_that("Parts of posterior covariance matrix associated with noise nodes of o
   S <- linearinterpol_map$jacobian(zpost, with.id=TRUE)
   expres <- U - U %*% t(S[is_obs,]) %*% solve(S[is_obs,] %*% U %*% t(S[is_obs,])) %*% S[is_obs,] %*% U
   # compare to obtained result
-  res <- get_posterior_cov(linearinterpol_map, zpost, U, obs, c(1,3,5,7,8), 2:4)
-  expect_equal(res, expres[c(1,3,5,7,8),2:4])
+  res <- get_posterior_cov(linearinterpol_map, zpost, U, obs, c(1,3,5,7,8), c(2,6,4))
+  expect_equal(res, expres[c(1,3,5,7,8), c(2,6,4)])
+})
+
+
+test_that("Parts of posterior covariance matrix associated with observed variables correctly computed for ret.dep=TRUE", {
+  cursysdt <- copy(sysdt)
+  linearinterpol_map <- create_linearinterpol_map()
+  linearinterpol_map$setup(params)
+  zprior <- sysdt[, data]
+  obs <- cursysdt$obs
+  U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
+  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  res <- get_posterior_cov(linearinterpol_map, zpost, U, obs, c(1,3,5,7,8), c(2,7,4), ret.dep=TRUE)
+  # prepare expected result
+  is_indep <- is.na(obs)
+  is_obs <- !is.na(obs)
+  S <- linearinterpol_map$jacobian(zpost, with.id=TRUE)
+  expres <- U - U %*% t(S[is_obs,]) %*% solve(S[is_obs,] %*% U %*% t(S[is_obs,])) %*% S[is_obs,] %*% U
+  expres <- expres[c(1,3,5,7,8),c(2,7,4)]
+  expres[c(4,5),] <- 0
+  expres[,2] <- 0
+  expect_equal(res, expres)
 })
 
 
@@ -133,6 +163,27 @@ test_that("Parts of posterior covariance matrix correctly computed for determini
   res <- as.matrix(get_posterior_cov(linearinterpol_map, zpost, U, obs, 1, 2:6))
   expres <- as.matrix(globexpres[1, 2:6, drop=FALSE])
   dimnames(res) <- dimnames(expres) <- NULL
+  expect_equal(res, expres)
+})
+
+
+test_that("Parts of posterior covariance matrix for deterministic nodes correctly computed for ret.dep=TRUE", {
+  cursysdt <- copy(sysdt2)
+  linearinterpol_map <- create_linearinterpol_map()
+  linearinterpol_map$setup(params)
+  zprior <- sysdt[, data]
+  obs <- cursysdt$obs
+  U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
+  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  # prepare expected result
+  is_indep <- is.na(obs)
+  is_obs <- !is.na(obs)
+  is_fixed <- is.na(obs) & diag(U) == 0
+  S <- linearinterpol_map$jacobian(zpost, with.id=TRUE)
+  globexpres <- U - U %*% t(S[is_obs,]) %*% solve(S[is_obs,] %*% U %*% t(S[is_obs,])) %*% S[is_obs,] %*% U
+  # compare to obtained results
+  expres <- as.matrix(S %*% globexpres %*% t(S))
+  res <- as.matrix(get_posterior_cov(linearinterpol_map, zpost, U, obs, 1:10, 1:10, ret.dep=TRUE))
   expect_equal(res, expres)
 })
 

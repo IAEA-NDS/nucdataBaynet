@@ -174,7 +174,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
 }
 
 
-get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs) {
+get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs, ret.dep=FALSE) {
 
   stopifnot(length(zpost) == nrow(U))
   stopifnot(length(zpost) == ncol(U))
@@ -213,20 +213,37 @@ get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs) {
                          j=map_idcs_to_indep[row_idcs[is_indep_row]],
                          x=1,
                          dims=c(length(row_idcs), ncol(Sred)))
-  S_left[is_obs_row,] <- S[row_idcs[is_obs_row], isindep]
-  S_left <- drop0(S_left)
 
   S_right <- sparseMatrix(i=seq_along(col_idcs)[is_indep_col],
                           j=map_idcs_to_indep[col_idcs[is_indep_col]],
                           x=1,
                           dims=c(length(col_idcs), ncol(Sred)))
-  S_right[is_obs_col,] <- S[col_idcs[is_obs_col], isindep]
+
+  if (!ret.dep) {
+    # fixed (independent nodes) have zero prior uncertainty
+    # therefore we can exclude them from the sensitivity matrix if ret.dep=FALSE
+    # for independent nodes attached to observed nodes, we need to determine
+    # their posterior uncertainty by forward propagating the independent nodes
+    S_left[is_obs_row,] <- S[row_idcs[is_obs_row], isindep]
+    S_right[is_obs_col,] <- S[col_idcs[is_obs_col], isindep]
+  } else {
+    # observed dependent nodes have zero posterior uncertainty
+    # so we can exclude them from the sensitivity matrix if ret.dep = TRUE
+    # we need to include however the fixed nodes because their
+    # uncertainties are given by forward propagating independent nodes
+    S_left[is_fixed_row,] <- S[row_idcs[is_fixed_row], isindep]
+    S_right[is_fixed_col,] <- S[col_idcs[is_fixed_col], isindep]
+  }
+
+  S_left <- drop0(S_left)
   S_right <- drop0(S_right)
 
   Upost <- S_left %*% solve(invPostU_red, t(S_right))
   # fix the covariance matrix of error variables attached to observed nodes
-  Upost[is_obs_row,] <- (-Upost[is_obs_row,])
-  Upost[,is_obs_col] <- (-Upost[,is_obs_col])
+  if (!ret.dep) {
+    Upost[is_obs_row,] <- (-Upost[is_obs_row,])
+    Upost[,is_obs_col] <- (-Upost[,is_obs_col])
+  }
   return(Upost)
 }
 

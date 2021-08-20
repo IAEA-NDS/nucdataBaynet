@@ -1,14 +1,14 @@
 set.seed(59)
 
-yref <- runif(3)
+yref <- runif(4)
 pref <- runif(3)
-S <- matrix(runif(9), 3, 3)
+S <- matrix(runif(12), 4, 3)
 
 linearmap_def <- list(
   maptype = "linearmap_map",
   mapname = "linearmap",
   src_idx = c(5,1,7),
-  tar_idx = c(2,6,3),
+  tar_idx = c(2,6,3,9),
   S = S, yref = yref, pref = pref
 )
 

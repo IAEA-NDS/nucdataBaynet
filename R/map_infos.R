@@ -8,7 +8,8 @@ get_map_generators <- function(maptypes=character(0)) {
     "convolution_with_xtrafo_map" = create_convolution_with_xtrafo_map,
     "nonlinear_map" = create_nonlinear_map,
     "normerr_map" = create_normerr_map,
-    "product_map" = create_product_map
+    "product_map" = create_product_map,
+    "linearmap_map" = create_linearmap_map
   )
   if (length(maptypes) == 0) {
     maptypes <- names(registered_map_creators)

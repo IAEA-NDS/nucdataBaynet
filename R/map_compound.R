@@ -9,7 +9,11 @@ create_compound_map <- function() {
 
     stopifnot(!is.null(params$maps))
     maps <- lapply(params$maps, function(curparams) {
-        return(create_map(curparams))
+      tryCatch(create_map(curparams), error = function(e) {
+        e$message <- paste0(e$message, " (during creation of map with name ",
+                            curparams$mapname, " of type ", curparams$maptype)
+        stop(e)
+      })
     })
     max_idx <- 0
     # ensure no duplicates in indices

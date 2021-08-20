@@ -6,6 +6,10 @@ create_linearinterpol_map <- function() {
   setup <- function(params) {
     stopifnot(params$maptype == getType())
     stopifnot(all(c('maptype','src_idx','tar_idx','src_x','tar_x') %in% names(params)))
+    stopifnot(length(params$src_idx) > 0)
+    stopifnot(length(params$tar_idx) > 0)
+    stopifnot(length(params$src_idx) == length(params$src_x))
+    stopifnot(length(params$tar_idx) == length(params$tar_x))
     src_ord <- order(params$src_x)
     map <<- list(
       maptype = params$maptype,

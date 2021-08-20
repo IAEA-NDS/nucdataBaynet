@@ -7,8 +7,8 @@ create_linearmap_map <- function() {
     stopifnot(!is.null(params[["maptype"]]))
     stopifnot(all(c("src_idx","tar_idx") %in% names(params)))
     stopifnot(all(c("S","yref","pref") %in% names(params)))
-    stopifnot(length(params[["src_idx"]]) == nrow(params[["S"]]))
-    stopifnot(length(params[["tar_idx"]]) == ncol(params[["S"]]))
+    stopifnot(length(params[["tar_idx"]]) == nrow(params[["S"]]))
+    stopifnot(length(params[["src_idx"]]) == ncol(params[["S"]]))
     mapinfo <<- list(
       mapname = params[["mapname"]],
       description = params[["description"]],

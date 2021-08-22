@@ -9,7 +9,8 @@ get_map_generators <- function(maptypes=character(0)) {
     "nonlinear_map" = create_nonlinear_map,
     "normerr_map" = create_normerr_map,
     "product_map" = create_product_map,
-    "linearmap_map" = create_linearmap_map
+    "linearmap_map" = create_linearmap_map,
+    "relativemap_map" = create_relativemap_map
   )
   if (length(maptypes) == 0) {
     maptypes <- names(registered_map_creators)

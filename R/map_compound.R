@@ -126,22 +126,18 @@ create_compound_map <- function() {
       }
       else
       {
-        self_map_flag <- is_self_map(curmap)
+        # self_map_flag <- is_self_map(curmap)
+        cur_src_idx <- curmap$get_src_idx()
         cur_tar_idx <- curmap$get_tar_idx()
-        if (self_map_flag) {
-          diag(S)[cur_tar_idx] <- 0
-          x[cur_tar_idx] <- x[cur_tar_idx] - orig_x[cur_tar_idx]
-        }
+        selfmap_mask <- get_selfmap_mask(x, cur_src_idx, cur_tar_idx)
+        diag(S)[selfmap_mask] <- 0
+        x[selfmap_mask] <- x[selfmap_mask] - orig_x[selfmap_mask]
         curS <- curmap$jacobian(x, TRUE)
-        if (self_map_flag) {
-          diag(curS)[cur_tar_idx] <- diag(curS)[cur_tar_idx] - 1
-        }
+        diag(curS)[selfmap_mask] <- diag(curS)[selfmap_mask] - 1
         S <- curS %*% S
-        if (self_map_flag) {
-          if (with.id) {
-            diag(S)[cur_tar_idx] <- 1
-          }
-          x[cur_tar_idx] <- x[cur_tar_idx] + orig_x[cur_tar_idx]
+        if (with.id) {
+          diag(S)[selfmap_mask] <- 1
+          x[selfmap_mask] <- x[selfmap_mask] + orig_x[selfmap_mask]
         }
       }
       x <- curmap$propagate(x, with.id=TRUE)

@@ -88,27 +88,19 @@ create_compound_map <- function() {
     }
     initialres <- res
     for (curmap in map_list) {
-      self_map_flag <- is_self_map(curmap)
+      cur_src_idx <- curmap$get_src_idx()
       cur_tar_idx <- curmap$get_tar_idx()
-      if (self_map_flag) {
-        res[cur_tar_idx] <- res[cur_tar_idx] - initialres[cur_tar_idx]
-      }
-      if (with.id) {
-        if (!self_map_flag) {
-          res <- curmap$propagate(res, TRUE)
-        } else {
-          res[cur_tar_idx] <- curmap$propagate(res, FALSE)[cur_tar_idx]
-        }
-      } else {
-        if (!self_map_flag) {
-          res <- res + curmap$propagate(res, FALSE)
-        } else {
-          res[cur_tar_idx] <- curmap$propagate(res, FALSE)[cur_tar_idx]
-        }
-      }
-      if (self_map_flag) {
-        res[cur_tar_idx] <- res[cur_tar_idx] + initialres[cur_tar_idx]
-      }
+      # special treatment of maps with overlapping src and tar idcs
+      self_map_mask <- rep(FALSE, length(x))
+      self_map_mask[cur_src_idx] <- TRUE
+      self_map_mask[cur_tar_idx] <- self_map_mask[cur_tar_idx] & TRUE
+      self_map_mask[-cur_tar_idx] <- self_map_mask[-cur_tar_idx] & FALSE
+
+      res[self_map_mask] <- res[self_map_mask] - initialres[self_map_mask]
+      tmpres <- res
+      res <- curmap$propagate(res, FALSE)
+      res[!self_map_mask] <- res[!self_map_mask] + tmpres[!self_map_mask]
+      res[self_map_mask] <- res[self_map_mask] + initialres[self_map_mask]
     }
     if (!with.id) {
       res[pure_sources] <- 0

@@ -91,10 +91,7 @@ create_compound_map <- function() {
       cur_src_idx <- curmap$get_src_idx()
       cur_tar_idx <- curmap$get_tar_idx()
       # special treatment of maps with overlapping src and tar idcs
-      self_map_mask <- rep(FALSE, length(x))
-      self_map_mask[cur_src_idx] <- TRUE
-      self_map_mask[cur_tar_idx] <- self_map_mask[cur_tar_idx] & TRUE
-      self_map_mask[-cur_tar_idx] <- self_map_mask[-cur_tar_idx] & FALSE
+      self_map_mask <- get_selfmap_mask(x, cur_src_idx, cur_tar_idx)
 
       res[self_map_mask] <- res[self_map_mask] - initialres[self_map_mask]
       tmpres <- res

@@ -51,6 +51,14 @@ is_self_map <- function(map) {
   return(numDups > 0)
 }
 
+get_selfmap_mask <- function(x, src_idx, tar_idx) {
+  self_map_mask <- rep(FALSE, length(x))
+  self_map_mask[src_idx] <- TRUE
+  self_map_mask[tar_idx] <- self_map_mask[tar_idx] & TRUE
+  self_map_mask[-tar_idx] <- self_map_mask[-tar_idx] & FALSE
+  return(self_map_mask)
+}
+
 
 get_network_structure <- function(maplist, nodes, obs, nonlinear_ind=TRUE) {
   unique_nodes <- unique(nodes)

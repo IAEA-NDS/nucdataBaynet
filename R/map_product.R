@@ -72,7 +72,7 @@ create_product_map <- function() {
       for (tc in t[-idx]) {
         tprod <- tprod * tc
       }
-      tprod <- as(tprod, "sparseVector")
+      tprod <- as.vector(tprod)
       compS <- compS + curS * tprod
     }
     if (with.id) {

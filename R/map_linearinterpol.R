@@ -79,26 +79,44 @@ create_linearinterpol_map <- function() {
 
 
   update_jacobian <- function(dim) {
+
     idx1 <- findInterval(map$tar_x, map$src_x, rightmost.closed=TRUE)
     idx2 <- idx1 + 1
-    if (isTRUE(map$zero_outside)) {
-      sel <- idx1 >= 1 & idx2 < length(map$tar_x)
-      idx1 <- idx1[sel]
-      idx2 <- idx2[sel]
-      tar_idx <- map$tar_idx[sel]
-      xp <- map$tar_x[sel]
-    } else {
-      tar_idx <- map$tar_idx
-      xp <- map$tar_x
+    # special treatment of mesh with one point
+    idrowsel <- idx1==0 & map$tar_x == map$src_x[idx2]
+    gidrowidx <- map$tar_idx[idrowsel]
+    gidcolidx <- map$src_idx[idx2[idrowsel]]
+    idx1 <- idx1[!idrowsel]
+    idx2 <- idx2[!idrowsel]
+
+    i <- integer(0)
+    j <- integer(0)
+    coeff <- numeric(0)
+    if (length(idx1) > 0) {
+      if (isTRUE(map$zero_outside)) {
+        sel <- idx1 >= 1 & idx2 <= length(map$src_x)
+        idx1 <- idx1[sel]
+        idx2 <- idx2[sel]
+        tar_idx <- map$tar_idx[sel]
+        xp <- map$tar_x[sel]
+      } else {
+        tar_idx <- map$tar_idx
+        xp <- map$tar_x
+      }
+      gidx1 <- map$src_idx[idx1]
+      gidx2 <- map$src_idx[idx2]
+      x1 <- map$src_x[idx1]
+      x2 <- map$src_x[idx2]
+      delta <- x2 - x1
+      i <- rep(tar_idx, 2)
+      j <- c(gidx1, gidx2)
+      coeff <- c((x2-xp)/delta, (xp-x1)/delta)
     }
-    gidx1 <- map$src_idx[idx1]
-    gidx2 <- map$src_idx[idx2]
-    x1 <- map$src_x[idx1]
-    x2 <- map$src_x[idx2]
-    delta <- x2 - x1
-    i <- rep(tar_idx, 2)
-    j <- c(gidx1, gidx2)
-    coeff <- c((x2-xp)/delta, (xp-x1)/delta)
+    # add the cases with one-point meshes
+    i <- c(i, gidrowidx)
+    j <- c(j, gidcolidx)
+    coeff <- c(coeff, rep(1, length(gidrowidx)))
+    # create the jacobian
     S <<- sparseMatrix(i = i, j = j, x = coeff,
                        dims = rep(dim,2))
   }

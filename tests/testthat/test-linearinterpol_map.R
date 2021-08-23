@@ -99,3 +99,24 @@ test_that("setup and set_tar_x do not fail if some tar_x outside mesh and zero_o
   res <- map$propagate(1:10, with.id=TRUE)
   expect_true((all((res-inp) == 0)))
 })
+
+
+test_that("propagate works for a mesh with a single point if x matches perfectly", {
+  curparams <- params
+  curparams$src_idx <- 3
+  curparams$src_x <- 5.7
+  curparams$tar_idx <- 7
+  curparams$tar_x <- 5.7
+  curmap <- create_map(curparams)
+  inp <- 1:10
+  # with.id=FALSE
+  res <- curmap$propagate(inp, with.id=FALSE)
+  expres <- rep(0, length(inp))
+  expres[curparams$tar_idx] <- inp[curparams$src_idx]
+  expect_equal(res, expres)
+  # with.id=TRUE
+  res <- curmap$propagate(inp, with.id=TRUE)
+  expres <- inp
+  expres[curparams$tar_idx] <- expres[curparams$tar_idx] + inp[curparams$src_idx]
+  expect_equal(res, expres)
+})

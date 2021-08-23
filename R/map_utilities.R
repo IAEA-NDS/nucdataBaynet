@@ -51,8 +51,8 @@ is_self_map <- function(map) {
   return(numDups > 0)
 }
 
-get_selfmap_mask <- function(x, src_idx, tar_idx) {
-  self_map_mask <- rep(FALSE, length(x))
+get_selfmap_mask <- function(src_idx, tar_idx, n=max(src_idx, tar_idx)) {
+  self_map_mask <- rep(FALSE, n)
   self_map_mask[src_idx] <- TRUE
   self_map_mask[tar_idx] <- self_map_mask[tar_idx] & TRUE
   self_map_mask[-tar_idx] <- self_map_mask[-tar_idx] & FALSE

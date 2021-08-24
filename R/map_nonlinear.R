@@ -9,19 +9,23 @@ create_nonlinear_map <- function() {
     stopifnot(length(params$src_idx) == length(params$tar_idx))
     stopifnot(is.vector(params$src_idx))
     stopifnot(is.vector(params$tar_idx))
-    stopifnot(params$funname %in% c("exp", "relu"))
+    stopifnot(params$funname %in% c("exp", "relu", "limiter"))
     map <<- list(maptype = params$maptype,
                  mapname = params$mapname,
                  description = params$description,
                  src_idx = params$src_idx,
                  tar_idx = params$tar_idx,
-                 funname = params$funname)
+                 funname = params$funname,
+                 minvalue = params$minvalue, maxvalue = params$maxvalue)
     if (params$funname == "exp") {
       fun <<- exp
       dfun <<- exp
     } else if (params$funname == "relu") {
       fun <<- function(x) { pmax(x, 0) }
       dfun <<- function(x) { as.numeric(x >= 0) }
+    } else if (params$funname == "limiter") {
+      fun <<- function(x) { pmin(pmax(x, map$minvalue), map$maxvalue) }
+      dfun <<- function(x) { as.numeric(x >= map$minvalue & x <= map$maxvalue) }
     } else {
       stop(paste0("function of name ", params$funname, " not supported"))
     }

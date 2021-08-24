@@ -139,6 +139,13 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
     } else if (gain > 0.75) {
       lambda <- lambda / 3
     }
+    # print information
+    if (print.info) {
+      cat(paste0("### iter ", cnt, " ###\n",
+                 "gain: ", gain, " - relgain: ", relgain, "\n",
+                 "fex: ", fex, " - last fex: ", last_fex, "\n",
+                 "accept: ", fex < last_fex, " - new lambda: ", lambda, "\n"))
+    }
     # accept proposal if better (smaller) than current one
     if (fex - last_fex < 0) {
       zref <- zprop
@@ -147,11 +154,6 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
       last_reject <- FALSE
     } else {
       last_reject <- TRUE
-    }
-    # print information
-    if (print.info) {
-      cat(paste0("iter ", cnt, " - gain: ", gain, " - relgain: ", relgain, " - fex: ", last_fex, "\n"))
-      cat(paste0("last_reject: ", last_reject, " - lambda: ", lambda, "\n"))
     }
   }
 

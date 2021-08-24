@@ -115,7 +115,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
     if (fun_error) {
       last_reject <- TRUE
       gain <- -Inf
-      lambda <- lambda * 10
+      lambda <- lambda * 2^5
       if (print.info) {
         cat(paste0("iter ", cnt, " - objective function crashed with proposed parameters\n"))
         cat(paste0("last_reject: ", last_reject, " - lambda: ", lambda, "\n"))

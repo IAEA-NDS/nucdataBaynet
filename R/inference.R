@@ -1,4 +1,10 @@
-gls <- function(map, zprior, U, obs, zref=zprior, damp=0, ret.list=FALSE) {
+gls <- function(map, zprior, U, obs, zref=zprior,
+                adjust_idcs=NULL, damp=0, ret.list=FALSE) {
+
+  stopifnot(length(obs) == length(zprior))
+  stopifnot(nrow(U) == length(zprior))
+  stopifnot(ncol(U) == length(zprior))
+  stopifnot(length(zref) == length(zprior))
 
   obsmask <- !is.na(obs)
 
@@ -11,13 +17,26 @@ gls <- function(map, zprior, U, obs, zref=zprior, damp=0, ret.list=FALSE) {
   # prepare the statistical model description
   # and auxiliary quantities
   adjustable <- diag(U) > 0
+  # tweak zprior and U if user requested to return the
+  # conditional estimate given the elements referenced by adjust_idcs
+  if (!is.null(adjust_idcs)) {
+    adjust_mask <- rep(FALSE, length(zprior))
+    adjust_mask[adjust_idcs] <- TRUE
+    sel <- !obsmask & adjustable & !adjust_mask
+    if (any(sel)) {
+      zprior[sel] <- zref[sel]
+      U[sel,] <- 0
+      U[,sel] <- 0
+      adjustable <- diag(U) > 0
+    }
+  }
   isindep <- !obsmask & adjustable
 
   stopifnot(all(diag(U)[obsmask] > 0))
   stopifnot(all(zref[!adjustable] == zprior[!adjustable]))
 
+  # define the quantities as described in evaluation with Bayesian network paper
   Ured <- U[adjustable,adjustable]
-
   v <- zprior
   v[obsmask] <- obs[obsmask] - zprior[obsmask]
   vref <- zref
@@ -81,6 +100,9 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   remove(S, invUred_post)
 
   # run the LM optimization loop
+  # we ignore the values in the attached noise nodes provided by the user
+  # in zref, and compute their value here for consistency
+  zref[observed] <- 0
   yref <- map$propagate(zref)
   zref[observed] <- obs[observed] - yref[observed]
   last_d <- zref[adjustable] - zprior[adjustable]
@@ -95,13 +117,8 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
           max(relgain_hist) > abs(reltol) &&
           abs(relgain) > reltol2)) {
     cnt <- cnt + 1
-    zprop <- gls(map, zprior, U, obs, zref=zref, damp=lambda)
-    if (!is.null(adjust_idcs)) {
-      tmp <- zprop
-      zprop <- zref
-      zprop[adjust_idcs] <- tmp[adjust_idcs]
-      zprop[observed] <- tmp[observed]
-    }
+    zprop <- gls(map, zprior, U, obs, zref=zref,
+                 adjust_idcs=adjust_idcs, damp=lambda)
     # calculate improvement according to linear approximation
     dapx <- zprop[adjustable] - zprior[adjustable]
     fapx <- as.vector(crossprod(dapx, solve(Ured, dapx)))

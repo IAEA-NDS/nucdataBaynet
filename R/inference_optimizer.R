@@ -1,5 +1,5 @@
 gls <- function(map, zprior, U, obs, zref=zprior,
-                adjust_idcs=NULL, damp=0, ret.list=FALSE) {
+                adjust_idcs=NULL, damp=0, ret.list=FALSE, opt.info=FALSE) {
 
   stopifnot(length(obs) == length(zprior))
   stopifnot(nrow(U) == length(zprior))
@@ -63,7 +63,9 @@ gls <- function(map, zprior, U, obs, zref=zprior,
   if (ret.list) {
     return(list(
       zpost = zpost,
-      ypost = yref + as.vector(S %*% (zpost - zref))
+      ypost = yref + as.vector(S %*% (zpost - zref)),
+      post_pdf_val = 1,
+      post_pdf_grad = s2
     ))
   } else {
     return(zpost)
@@ -77,7 +79,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   # LM parameters
   defcontrol = list(
     reltol = 1e-6, maxcount = 100, mincount = 10, tau = 1e-10,
-    reltol_steps = 3, reltol2 = 1e-12)
+    reltol_steps = 3, reltol2 = 1e-12, maxreject=10)
   control <- modifyList(defcontrol, control)
 
   reltol <- control$reltol
@@ -85,6 +87,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   maxcount <- control$maxcount
   mincount <- control$mincount
   tau <- control$tau
+  maxreject <- control$maxreject
 
   adjustable <- diag(U) > 0
   observed <- !is.na(obs)
@@ -105,17 +108,22 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   zref[observed] <- 0
   yref <- map$propagate(zref)
   zref[observed] <- obs[observed] - yref[observed]
+  # NOTE: indices referred to by adjustable also include the observations
   last_d <- zref[adjustable] - zprior[adjustable]
   init_fex <- as.vector(crossprod(last_d, solve(Ured, last_d)))
   last_fapx <- last_fex <- init_fex
   cnt <- 0
+  cnt2 <- 0
+  reject_cnt <- 0
   last_reject <- TRUE
   rel_gain <- Inf
   relgain_hist <- rep(Inf, control$reltol_steps)
-  while (cnt < mincount ||
-         (cnt < maxcount &&
-          max(relgain_hist) > abs(reltol) &&
-          abs(relgain) > reltol2)) {
+  while ((reject_cnt < maxreject) &&
+         ((mincount >= 0 && cnt < mincount && cnt < maxcount) ||
+          (mincount < 0 && cnt2 < (-mincount) && cnt < maxcount) ||
+          (cnt < maxcount &&
+           max(relgain_hist) > abs(reltol) &&
+           abs(relgain) > reltol2))) {
     cnt <- cnt + 1
     zprop <- gls(map, zprior, U, obs, zref=zref,
                  adjust_idcs=adjust_idcs, damp=lambda)
@@ -146,7 +154,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
     gain <- (last_fex - fex) / (abs(last_fapx - fapx) + 1e-15)
     relgain <- (last_fex - fex) / fex
     if (gain > 0) {
-      relgain_hist <- c(tail(relgain_hist, n=9), relgain)
+      relgain_hist <- c(tail(relgain_hist, n=(control$reltol_steps-1)), relgain)
     }
     # adjust damping
     if (gain < -2) {
@@ -169,8 +177,11 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
       last_fapx <- fapx
       last_fex <- fex
       last_reject <- FALSE
+      cnt2 <- cnt2 + 1
+      reject_cnt <- 0
     } else {
       last_reject <- TRUE
+      reject_cnt <- reject_cnt + 1
     }
   }
 
@@ -192,101 +203,3 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   return(res)
 }
 
-
-get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs, ret.dep=FALSE) {
-
-  stopifnot(length(zpost) == nrow(U))
-  stopifnot(length(zpost) == ncol(U))
-
-  if (is.logical(row_idcs)) {
-    row_idcs <- which(row_idcs)
-  }
-  if (is.logical(col_idcs)) {
-    col_idcs <- which(col_idcs)
-  }
-
-  adjustable <- diag(U) > 0
-  observed <- !is.na(obs)
-  isindep <- adjustable & !observed
-  isfixed <- !adjustable & !observed
-  adjobs <- observed[adjustable]
-
-  is_indep_row <- isindep[row_idcs]
-  is_indep_col <- isindep[col_idcs]
-  is_obs_row <- observed[row_idcs]
-  is_obs_col <- observed[col_idcs]
-
-  is_fixed_row <- isfixed[row_idcs]
-  is_fixed_col <- isfixed[col_idcs]
-
-  map_idcs_to_indep <- rep(NA, length(zpost))
-  map_idcs_to_indep[isindep] <- seq_len(sum(isindep))
-
-  # determine uncertainties of independent variables
-  S <- drop0(map$jacobian(zpost, with.id=TRUE))
-  Sred <- S[adjustable, isindep]
-  Ured <- U[adjustable, adjustable]
-  invPostU_red <- forceSymmetric(crossprod(Sred, solve(Ured, Sred, sparse=TRUE)))
-
-  S_left <- sparseMatrix(i=seq_along(row_idcs)[is_indep_row],
-                         j=map_idcs_to_indep[row_idcs[is_indep_row]],
-                         x=1,
-                         dims=c(length(row_idcs), ncol(Sred)))
-
-  S_right <- sparseMatrix(i=seq_along(col_idcs)[is_indep_col],
-                          j=map_idcs_to_indep[col_idcs[is_indep_col]],
-                          x=1,
-                          dims=c(length(col_idcs), ncol(Sred)))
-
-  if (!ret.dep) {
-    # fixed (independent nodes) have zero prior uncertainty
-    # therefore we can exclude them from the sensitivity matrix if ret.dep=FALSE
-    # for independent nodes attached to observed nodes, we need to determine
-    # their posterior uncertainty by forward propagating the independent nodes
-    S_left[is_obs_row,] <- S[row_idcs[is_obs_row], isindep]
-    S_right[is_obs_col,] <- S[col_idcs[is_obs_col], isindep]
-  } else {
-    # observed dependent nodes have zero posterior uncertainty
-    # so we can exclude them from the sensitivity matrix if ret.dep = TRUE
-    # we need to include however the fixed nodes because their
-    # uncertainties are given by forward propagating independent nodes
-    S_left[is_fixed_row,] <- S[row_idcs[is_fixed_row], isindep]
-    S_right[is_fixed_col,] <- S[col_idcs[is_fixed_col], isindep]
-  }
-
-  S_left <- drop0(S_left)
-  S_right <- drop0(S_right)
-
-  Upost <- S_left %*% solve(invPostU_red, t(S_right))
-  # fix the covariance matrix of error variables attached to observed nodes
-  if (!ret.dep) {
-    Upost[is_obs_row,] <- (-Upost[is_obs_row,])
-    Upost[,is_obs_col] <- (-Upost[,is_obs_col])
-  }
-  return(Upost)
-}
-
-
-get_posterior_sample <- function(map, zpost, U, obs, num) {
-  adjustable <- diag(U) > 0
-  observed <- !is.na(obs)
-  isindep <- adjustable & !observed
-  adjobs <- observed[adjustable]
-  numindep <- sum(isindep)
-  numobs <- sum(observed)
-  S <- drop0(map$jacobian(zpost, with.id=TRUE))
-  Sred <- S[adjustable, isindep]
-  Ured <- U[adjustable, adjustable]
-  invPostU_red <- forceSymmetric(crossprod(Sred, solve(Ured, Sred, sparse=TRUE)))
-  Lfact <- Cholesky(invPostU_red, perm=TRUE, LDL=FALSE)
-  Pmat <- as(Lfact, "pMatrix")
-  rvec <- matrix(rnorm(numindep*num), nrow=numindep)
-  zpost[observed] <- 0
-  smpl <- matrix(rep(zpost, num), ncol=num, nrow=length(zpost))
-  smpl[isindep,] <- smpl[isindep,] + as.matrix(crossprod(Pmat, solve(Lfact, rvec, system="Lt")))
-  # calculate the errors associated with observed nodes
-  for (i in seq_len(num)) {
-    smpl[observed,i] <- obs[observed] - map$propagate(smpl[,i], with.id=TRUE)[observed]
-  }
-  return(smpl)
-}

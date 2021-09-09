@@ -1,3 +1,42 @@
+#' Create a linear interpolation mapping
+#'
+#' Creates a map to linearly interpolate the values at the source indices
+#' given on a one-dimensional mesh to the one-dimensional mesh associated with
+#' the variables at the target indices.
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"linearinterpol_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices \cr
+#' \code{src_x} \tab Vector with the mesh associated with the source indices \cr
+#' \code{tar_x} \tab Vector with the mesh associated with the target indices \cr
+#' \code{zero_outside} \tab Default is \code{FALSE}. If TRUE, y-values of target x-values outside
+#'                          the limits of the source mesh will be zero, otherwise this situation
+#'                          is not allowed.
+#' }
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#'
+#' @family mappings
+#' @examples
+#' params <- list(
+#'   mapname = "mylinearintmap",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 4:6,
+#'   src_x = c(1,5,10),
+#'   tar_x = c(4,5,6)
+#' )
+#' mymap <- create_linearinterpol_map()
+#' mymap$setup(params)
+#' x <- c(1,2,3,0,0,0)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_linearinterpol_map <- function() {
 
   map <- NULL

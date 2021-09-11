@@ -1,3 +1,42 @@
+#' Create a mapping to effect a non-linear transformation
+#'
+#' Creates a mapping that transforms the values at the source indices by
+#' a predefined non-linear transformation and outpts them at the target
+#' indices. Supported transformations at present are \emph{exp}, \emph{relu}
+#' and \emph{limiter}.
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"nonlinear_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices.
+#'                     Must be of same length as \code{src_idx} \cr
+#' \code{funname} \tab A string specifying the non-linear transformation.
+#' Can be \code{"exp"}, \code{"relu"} or \code{"limiter"}. \cr
+#' \code{minvalue} \tab If \code{funname = "limiter"}, the lower cut-off limit. \cr
+#' \code{maxvalue} \tab If \code{funname = "limiter"}, the upper cut-off limit.
+#' }
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#'
+#' @family mappings
+#' @examples
+#' params <- list(
+#'   mapname = "mynonlinearmap",
+#'   maptype = "nonlinear_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 4:6,
+#'   funname = "relu"
+#' )
+#' mymap <- create_nonlinear_map()
+#' mymap$setup(params)
+#' x <- c(1,-2,3,0,0,0)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_nonlinear_map <- function() {
 
   map <- NULL

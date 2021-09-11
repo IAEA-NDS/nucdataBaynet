@@ -1,3 +1,52 @@
+#' Create a linear interpolation mapping including energy calibration
+#'
+#' Creates a map to linearly interpolate the values at the source indices
+#' given on a one-dimensional mesh to the one-dimensional mesh associated with
+#' the variables at the target indices.
+#' It is possible to apply a shift and scaling to the target mesh to account
+#' for, e.g., an energy calibration error of an experiment.
+#' The transformation is given by \eqn{x = \alpha + \beta x'} where
+#' \eqn{x'} is an x-value of the target mesh as stated by the user and the
+#' resulting \eqn{x} is the \emph{correct} x-value that should be used for
+#' the linear interpolation.
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"linearinterpol_with_xtrafo_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices \cr
+#' \code{src_x} \tab Vector with the mesh associated with the source indices \cr
+#' \code{tar_x} \tab Vector with the mesh associated with the target indices \cr
+#' \code{zero_outside} \tab Default is \code{FALSE}. If TRUE, y-values of target x-values outside
+#'                          the limits of the source mesh will be zero, otherwise this situation
+#'                          is not allowed. \cr
+#' \code{shiftx_idx} \tab Index associated with the variable that contains \eqn{\alpha}. \cr
+#' \code{scalex_idx} \tab Index associated with the variable that contains \eqn{\beta}
+#' }
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#'
+#' @family mappings
+#' @examples
+#' params <- list(
+#'   mapname = "mylinearintmap",
+#'   maptype = "linearinterpol_with_xtrafo_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 4:6,
+#'   src_x = c(1,5,10),
+#'   tar_x = c(4,5,6),
+#'   shiftx_idx = 7,
+#'   scalex_idx = 8
+#' )
+#' mymap <- create_linearinterpol_with_xtrafo_map()
+#' mymap$setup(params)
+#' x <- c(1,2,3,0,0,0,0.5,1.1)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_linearinterpol_with_xtrafo_map <- function() {
 
   linmap <- NULL

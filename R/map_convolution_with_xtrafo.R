@@ -1,3 +1,55 @@
+#' Create a mapping for windowed averages including energy calibration
+#'
+#' Creates a map to calulate averages of a linear piecewise function whose
+#' functions values are given at the source indices.
+#' The averages are evaluated at the x-values of the mesh associated with the
+#' target indices.
+#' It is also possible to apply the transformation \eqn{x = \alpha + (1-\beta)x'}
+#' to the x'-values of the target mesh before the averaging is performed.
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"convolution_with_xtrafo_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices \cr
+#' \code{src_x} \tab Vector with the mesh associated with the source indices \cr
+#' \code{tar_x} \tab Vector with the mesh associated with the target indices \cr
+#' \code{winsize} \tab The average of the function at the source mesh is taken
+#' between x-winsize/2 and x+winsize/2 \cr
+#' \code{winsize_idx} \tab The index of the variable containing the window size.
+#' Only one of \code{winsize} and \code{winsize_idx} must be present. \cr
+#' \code{shiftx} \tab Value of \eqn{\alpha} \cr
+#' \code{shiftx_idx} \tab Index associated with the variable that contains \eqn{\alpha}.
+#' Only one of \code{shiftx} and \code{shiftx_idx} must be present. \cr
+#' \code{scalex} \tab Value of \eqn{\beta}. \cr
+#' \code{scalex_idx} \tab Index associated with the variable that contains \eqn{\beta}.
+#' Only one of \code{scalex} and \code{scalex_idx} must be present.
+#' }
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#'
+#' @family mappings
+#' @examples
+#' params <- list(
+#'   mapname = "mylinearintmap",
+#'   maptype = "convolution_with_xtrafo_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 4:6,
+#'   src_x = c(1,5,10),
+#'   tar_x = c(4,5,6),
+#'   winsize_idx = 7,
+#'   shiftx_idx = 8,
+#'   scalex_idx = 9
+#' )
+#' mymap <- create_convolution_with_xtrafo_map()
+#' mymap$setup(params)
+#' x <- c(1,2,3,0,0,0,2,1,0.1)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_convolution_with_xtrafo_map <- function() {
 
   map_params <- NULL

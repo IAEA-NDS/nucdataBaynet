@@ -1,3 +1,43 @@
+#' Create a generic linear mapping
+#'
+#' Create a linear mapping between the variables at the source indices
+#' to the variables at the target indices, which is of the form
+#' \deqn{
+#'   \vec{y} = \vec{y}_{\textrm{ref}} + S (\vec{p} - \vec{p}_{\textrm{ref}})
+#' }
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"linearmap_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices. \cr
+#' \code{yref} \tab The vector \eqn{\vec{y}_{\textrm{ref}}} given in the formula. \cr
+#' \code{pref} \tab The vector \eqn{\vec{p}_{\textrm{ref}}} given in the formula. \cr
+#' \code{S} \tab The matrix \eqn{S} given in the formula.
+#' }
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#'
+#' @family mappings
+#' @examples
+#' params <- list(
+#'   mapname = "mylinearmap",
+#'   maptype = "linearmap_map",
+#'   src_idx = 1:2,
+#'   tar_idx = 3:5,
+#'   yref = rep(10, 3),
+#'   pref = c(2, 4),
+#'   S = matrix(c(1, 2, 3, 4, 5, 6), nrow=3, ncol=2)
+#' )
+#' mymap <- create_linearmap_map()
+#' mymap$setup(params)
+#' x <- c(1,-2,0,0,0)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_linearmap_map <- function() {
 
   mapinfo <- NULL

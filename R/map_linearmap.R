@@ -2,7 +2,7 @@
 #'
 #' Create a linear mapping between the variables at the source indices
 #' to the variables at the target indices, which is of the form
-#' \deqn{
+#' \mjsdeqn{
 #'   \vec{y} = \vec{y}_{\textrm{ref}} + S (\vec{p} - \vec{p}_{\textrm{ref}})
 #' }
 #'
@@ -12,10 +12,11 @@
 #' \code{maptype} \tab Must be \code{"linearmap_map"} \cr
 #' \code{src_idx} \tab Vector of source indices \cr
 #' \code{tar_idx} \tab Vector of target indices. \cr
-#' \code{yref} \tab The vector \eqn{\vec{y}_{\textrm{ref}}} given in the formula. \cr
-#' \code{pref} \tab The vector \eqn{\vec{p}_{\textrm{ref}}} given in the formula. \cr
+#' \code{yref} \tab The vector \mjseqn{\vec{y}_{\textrm{ref}}} given in the formula. \cr
+#' \code{pref} \tab The vector \mjseqn{\vec{p}_{\textrm{ref}}} given in the formula. \cr
 #' \code{S} \tab The matrix \eqn{S} given in the formula.
 #' }
+#' \loadmathjax
 #'
 #' @return
 #' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.

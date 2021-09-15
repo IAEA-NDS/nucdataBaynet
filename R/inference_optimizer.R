@@ -1,4 +1,4 @@
-gls <- function(map, zprior, U, obs, zref=zprior,
+glsalgo <- function(map, zprior, U, obs, zref=zprior,
                 adjust_idcs=NULL, damp=0, ret.list=FALSE, opt.info=FALSE) {
 
   stopifnot(length(obs) == length(zprior))
@@ -125,7 +125,7 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
            max(relgain_hist) > abs(reltol) &&
            abs(relgain) > reltol2))) {
     cnt <- cnt + 1
-    zprop <- gls(map, zprior, U, obs, zref=zref,
+    zprop <- glsalgo(map, zprior, U, obs, zref=zref,
                  adjust_idcs=adjust_idcs, damp=lambda)
     # calculate improvement according to linear approximation
     dapx <- zprop[adjustable] - zprior[adjustable]

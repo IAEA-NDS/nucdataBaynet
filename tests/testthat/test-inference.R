@@ -50,7 +50,7 @@ test_that("Bayesian network inference provides correct posterior estimate", {
   A1 <- solve(solve(A) + t(S)%*%solve(B)%*%S)
   x1 <- as.vector(A1 %*% (t(S) %*% solve(B) %*% y + solve(A) %*% x0))
   # prepare Bayesian network update
-  res <- gls(linearinterpol_map, zprior, U, obs)
+  res <- glsalgo(linearinterpol_map, zprior, U, obs)
   res <- res[-obsmask]
   expect_equal(x1, res)
 })
@@ -76,7 +76,7 @@ test_that("Deterministic relationships are handled correctly", {
   A1 <- A - A %*% t(S) %*% solve(S%*%A%*%t(S) + B) %*% S %*% A
   x1 <- as.vector(x0 + A %*% t(S) %*% solve(S%*%A%*%t(S) + B) %*% (effobs - S %*% x0))
   # prepare Bayesian network update
-  res <- gls(linearinterpol_map, zprior, U, obs)
+  res <- glsalgo(linearinterpol_map, zprior, U, obs)
   res <- res[-obsmask]
   expect_equal(x1, res)
 })
@@ -89,7 +89,7 @@ test_that("Parts of posterior covariance matrix associated with independent vari
   zprior <- sysdt[, data]
   obs <- cursysdt$obs
   U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
-  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  zpost <- glsalgo(linearinterpol_map, zprior, U, obs)
   # prepare expected result
   is_indep <- is.na(obs)
   S <- linearinterpol_map$jacobian(zpost, with.id=TRUE)
@@ -109,7 +109,7 @@ test_that("Parts of posterior covariance matrix associated with noise nodes of o
   zprior <- sysdt[, data]
   obs <- cursysdt$obs
   U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
-  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  zpost <- glsalgo(linearinterpol_map, zprior, U, obs)
   # prepare expected result
   is_indep <- is.na(obs)
   is_obs <- !is.na(obs)
@@ -128,7 +128,7 @@ test_that("Parts of posterior covariance matrix associated with observed variabl
   zprior <- sysdt[, data]
   obs <- cursysdt$obs
   U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
-  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  zpost <- glsalgo(linearinterpol_map, zprior, U, obs)
   res <- get_posterior_cov(linearinterpol_map, zpost, U, obs, c(1,3,5,7,8), c(2,7,4), ret.dep=TRUE)
   # prepare expected result
   is_indep <- is.na(obs)
@@ -150,7 +150,7 @@ test_that("Parts of posterior covariance matrix correctly computed for determini
   zprior <- sysdt[, data]
   obs <- cursysdt$obs
   U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
-  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  zpost <- glsalgo(linearinterpol_map, zprior, U, obs)
   # prepare expected result
   is_indep <- is.na(obs)
   is_obs <- !is.na(obs)
@@ -174,7 +174,7 @@ test_that("Parts of posterior covariance matrix for deterministic nodes correctl
   zprior <- sysdt[, data]
   obs <- cursysdt$obs
   U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
-  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  zpost <- glsalgo(linearinterpol_map, zprior, U, obs)
   # prepare expected result
   is_indep <- is.na(obs)
   is_obs <- !is.na(obs)
@@ -195,7 +195,7 @@ test_that("Posterior samples are reasonably consistent with posterior distributi
   zprior <- sysdt[, data]
   obs <- cursysdt$obs
   U <- Diagonal(n=nrow(cursysdt), x=cursysdt$unc)
-  zpost <- gls(linearinterpol_map, zprior, U, obs)
+  zpost <- glsalgo(linearinterpol_map, zprior, U, obs)
   postcov <- get_posterior_cov(linearinterpol_map, zpost, U, obs,
                                seq_along(zpost), seq_along(zpost))
   num <- 1e4

@@ -5,5 +5,5 @@
 #'
 #' @docType package
 #' @name nucdataBaynet
-#' @import data.table Matrix numDeriv
+#' @import data.table Matrix numDeriv mathjaxr
 NULL

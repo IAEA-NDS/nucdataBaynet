@@ -1,3 +1,54 @@
+#' Create a compound mapping
+#'
+#' Create a compound mapping by merging the effect of individual mappings.
+#'
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"compound_map"} \cr
+#' \code{maps} \tab a list with the parameter lists of the individual maps
+#' }
+#'
+#' This mapping will also take care of the correct ordering of the individual
+#' mappings.
+#' Bundling together individual mapping specifications to a compound map is
+#' the last step before doing Bayesian inference.
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#' @family mappings
+#'
+#' @examples
+#' params1 <- list(
+#'   mapname = "mymap1",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 7:8,
+#'   src_x = 1:3,
+#'   tar_x = 2:3
+#' )
+#' params2 <- list(
+#'   mapname = "mymap2",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 4:6,
+#'   tar_idx = 7:8,
+#'   src_x = 1:3,
+#'   tar_x = 2:3
+#' )
+#' compmap_params <- list(
+#'   mapname = "mycompmap",
+#'   maptype = "compound_map",
+#'   maps = list(params1, params2)
+#' )
+#' mycompmap <- create_compound_map()
+#' mycompmap$setup(compmap_params)
+#' x <- c(1,2,3,5,5,5,0,0)
+#' mycompmap$propagate(x)
+#' mycompmap$jacobian(x)
+#'
+#'
 create_compound_map <- function() {
 
   mapinfo <- list()

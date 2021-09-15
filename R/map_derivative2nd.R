@@ -1,3 +1,61 @@
+#' Create a mapping from function values to second derivatives
+#'
+#' Create a mapping from a discretized version of a function given on a
+#' mesh of x-values to a finite-difference approximation of the second
+#' derivative evaluated at a subset of the source x-mesh.
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"derivative2nd_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices. \cr
+#' \code{src_x} \tab Vector of x-values of the source mesh \cr
+#' \code{tar_x} \tab Vector of x-values of the target mesh.
+#'                   Must be a subset of the x-values of the source mesh
+#'                   and must not include the lowest or largest x-value
+#'                   of the source mesh.
+#' }
+#'
+#' \loadmathjax
+#' Let \mjseqn{x_i} denote the x-values of the mesh and \mjseqn{y_i} the
+#' associated y-vales of the function. A finite-difference approximation of
+#' the first derivative is given by
+#' \mjsdeqn{
+#'   \Delta_i = \frac{\vec{y}_{i+1} - \vec{y}_i}{\vec{x}_{i+1}-\vec{x}_i}
+#' }
+#' Applying this equation recursively, we obtain a finite approximation to
+#' the second derivative:
+#' \mjsdeqn{
+#'   \Delta^2_i = \frac{y_{i-1}}{(x_{i}-x_{i-1})(x_{i+1}-x_i)} +
+#'                \frac{y_{i+1}}{(x_{i+1}-x_i) (x_{i+1}-x_i)}
+#'                -\left(
+#'                  \frac{1}{(x_{i}-x_{i-1})(x_{i+1}-x_i)}
+#'                  +
+#'                  \frac{1}{(x_{i+1}-x_i) (x_{i+1}-x_i)}
+#'                \right) y_{i}
+#' }
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#' @family mappings
+#'
+#' @examples
+#' params <- list(
+#'   mapname = "myderiv2ndmap",
+#'   maptype = "derivative2nd_map",
+#'   src_idx = 1:5,
+#'   tar_idx = 6:8,
+#'   src_x = 1:5,
+#'   tar_x = 2:4
+#' )
+#' mymap <- create_derivative2nd_map()
+#' mymap$setup(params)
+#' x <- c(1,3,2,4,5,0,0,0)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_derivative2nd_map <- function() {
 
   map <- NULL

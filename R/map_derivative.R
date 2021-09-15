@@ -1,3 +1,51 @@
+#' Create a mapping from function values to the first derivative
+#'
+#' Create a mapping from a discretized version of a function with values
+#' given on an x-mesh to the first derivatives for a subset of the x-values
+#' of the source mesh.
+#'
+#' The following fields are required in the parameter list to initialize the mapping:
+#' \tabular{ll}{
+#' \code{mapname} \tab Name of the mapping \cr
+#' \code{maptype} \tab Must be \code{"derivative_map"} \cr
+#' \code{src_idx} \tab Vector of source indices \cr
+#' \code{tar_idx} \tab Vector of target indices. \cr
+#' \code{src_x} \tab Vector of x-values of the source mesh \cr
+#' \code{tar_x} \tab Vector of x-values of the target mesh.
+#'                   Must be a subset of the x-values of the source mesh
+#'                   and must not include the largest x-value
+#'                   of the source mesh.
+#' }
+#'
+#' \loadmathjax
+#' Let \mjseqn{x_i} denote the x-values of the mesh and \mjseqn{y_i} the
+#' associated y-vales of the function. A finite-difference approximation of
+#' the first derivative is given by
+#' \mjsdeqn{
+#'   \Delta_i = \frac{\vec{y}_{i+1} - \vec{y}_i}{\vec{x}_{i+1}-\vec{x}_i}
+#' }
+#'
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#' @export
+#' @family mappings
+#'
+#' @examples
+#' params <- list(
+#'   mapname = "myderivmap",
+#'   maptype = "derivative_map",
+#'   src_idx = 1:4,
+#'   tar_idx = 5:6,
+#'   src_x = 1:4,
+#'   tar_x = 2:3
+#' )
+#' mymap <- create_derivative_map()
+#' mymap$setup(params)
+#' x <- c(1,2,4,7,0,0)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_derivative_map <- function() {
 
   map <- NULL

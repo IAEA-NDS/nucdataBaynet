@@ -1,5 +1,60 @@
+#' Generalized Least Squares fitting
+#'
+#' Estimate the variables in a Bayesian network via the
+#' Generalized Least Squares method.
+#'
+#' @param map Mapping object. Usually a compound map, see \code{\link{create_compound_map}}
+#' @param zprior Vector of prior estimates of the independent variables (i.e., associated with nodes without parent nodes)
+#' @param U Prior covariance matrix of the independent variables
+#' @param obs Vector with observed values of dependent nodes. Must be of same
+#'            size as \code{zprior}. An \code{NA} value in this vector means that the
+#'            corresponding variable was not observed.
+#' @param zref Values of the independent variable that should be used as reference point
+#'             to calculate the Taylor approximation (using the \code{jacobian} function of \code{map})
+#' @param adjust_idcs Indices of variables that should be adjusted, all other independent
+#'                    variables are assumed to be fixed.
+#' @param damp A value indicating the magnitude of the damping term applied to the
+#'             inverse posterior covariance matrix. For a pure GLS update, leave it
+#'             zero. This parameter is used by the
+#'             in the case of a non-linear mapping.
+#' @param ret.list If \code{FALSE}, return a vector with the estimated variables of the
+#'                 independent variables. Otherwise, return a list with more information.
+#'                 Default is \code{FALSE}
+#'
+#' @return
+#' Return a vector with the posterior estimates of the independent variables if
+#' \code{ret.list=FALSE}. Otherwise return a list with the following fields:
+#' \tabular{ll}{
+#' \code{zpost} \tab Vector of posterior estimates of the independent variables\cr
+#' \code{ypost} \tab Vector of posterior estimates of the dependent variables
+#' }
+#'
+#' @export
+#'
+#' @examples
+#' library(Matrix)
+#' params <- list(
+#'   mapname = "mymap",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 1:10,
+#'   tar_idx = 11:15,
+#'   src_x = 1:10,
+#'   tar_x = 3:7
+#' )
+#' mymap <- create_linearinterpol_map()
+#' mymap$setup(params)
+#' U <- Diagonal(n=15, x=c(rep(1e3, 10), rep(1, 5)))
+#' zprior <- rep(0, 15)
+#' zref <- rep(0, 15)
+#' obs <- c(rep(NA,10), 5:9)
+#' zpost <- glsalgo(mymap, zprior, U, obs)
+#' # posterior estimes of computational grid
+#' zpost[1:10]
+#' # posterior estimates of error variables associated with observations
+#' zpost[11:15]
+#'
 glsalgo <- function(map, zprior, U, obs, zref=zprior,
-                adjust_idcs=NULL, damp=0, ret.list=FALSE, opt.info=FALSE) {
+                adjust_idcs=NULL, damp=0, ret.list=FALSE) {
 
   stopifnot(length(obs) == length(zprior))
   stopifnot(nrow(U) == length(zprior))
@@ -73,6 +128,92 @@ glsalgo <- function(map, zprior, U, obs, zref=zprior,
 }
 
 
+#' Maximum a posterior estimate via LM algorithm
+#'
+#' Finds the values of the independent variables that maximize
+#' the value of the posterior probability density function
+#' using a customized Levenberg-Marquardt algorithm.
+#'
+#' The convergence criteria of the Levenberg-Marquardt algorithm can be
+#' tweaked by several parameters in the \code{control} list passed as
+#' argument. The following fields are available:
+#' \tabular{ll}{
+#'   \code{reltol} \tab If the relative improvement of posterior pdf value falls
+#'                      below this value for a number of subsequent iterations
+#'                      given by \code{reltol_steps}, terminate optimization.
+#'                      (Default 1e-6) \cr
+#'   \code{reltol_steps} \tab Number of subsequent iteratios with a relative
+#'                            improvement of less than \code{reltol} necessary
+#'                            to terminate optimization procedure.
+#'                            (Default 3) \cr
+#'   \code{reltol2} \tab If relative improvement falls below this value,
+#'                       immediately terminate the optimization procedure.
+#'                       (Default 1e-12) \cr
+#'   \code{mincount} \tab Minimum number of iterations that should be performed
+#'                        regardless of relative improvement.
+#'                        (Default 10) \cr
+#'   \code{maxcount} \tab Maximum number of iterations that should be performed
+#'                        regardless of relative improvement.
+#'                        (Default 100) \cr
+#'   \code{maxreject} \tab Number of subsequent rejections of proposal vectors
+#'                         before the LM algorithm gives up.
+#'                         (Default 10) \cr
+#'   \code{tau} \tab Parameter that influences the initial choice of the damping term.
+#'                   The larger this parameter, the larger the initial damping applied
+#'                   to the inverse posterior covariance matrix.
+#'                   (Default 1e-10) \cr
+#' }
+#'
+#' @param map Mapping object. Usually a compound map, see \code{\link{create_compound_map}}.
+#' @param zprior Vector of prior estimates of the independent variables (i.e., associated with nodes without parent nodes)
+#' @param U Prior covariance matrix of the independent variables
+#' @param obs Vector with observed values of dependent nodes. Must be of same
+#'            size as \code{zprior}. An \code{NA} value in this vector means that the
+#'            corresponding variable was not observed.
+#' @param zref Values of the independent variable that should be used as the initial reference point
+#'             to calculate the Taylor approximation (using the \code{jacobian} function of \code{map})
+#' @param print.info Display output regarding the progress of the optimization procedure
+#' @param adjust_idcs Indices of variables that should be adjusted, all other independent
+#'                    variables are assumed to be fixed. The default value \code{NULL} means
+#'                    that all independent variables are adjusted.
+#' @param ret.invcov If \code{TRUE}, also return the inverse posterior covariance matrix
+#' @param control A list with control parameters to tweak the convergence criteria, see \strong{Details}.
+#'
+#' @return
+#' Return a list with the following fields:
+#' \tabular{ll}{
+#'   \code{zpost} \tab Variable assignment corresponding to (potentially local) maximum of
+#'   posterior density function. \cr
+#'   \code{init_val} \tab Initial value of objective function (proportional to posterior pdf value) \cr
+#'   \code{final_val} \tab Final value of objective function (proportional to posterior pdf value) \cr
+#'   \code{numiter} \tab Number of iterations
+#' }
+#' @export
+#'
+#' @examples
+#' library(Matrix)
+#' params <- list(
+#'   mapname = "mymap",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 1:10,
+#'   tar_idx = 11:15,
+#'   src_x = 1:10,
+#'   tar_x = 3:7
+#' )
+#' mymap <- create_linearinterpol_map()
+#' mymap$setup(params)
+#' U <- Diagonal(n=15, x=c(rep(1e3, 10), rep(1, 5)))
+#' zprior <- rep(0, 15)
+#' zref <- rep(0, 15)
+#' obs <- c(rep(NA,10), 5:9)
+#' # it is a linear map so LMalgo finds the solution in one iteration
+#' # but continues to run for ten iterations due to the default mincount setting
+#' res <- LMalgo(mymap, zprior, U, obs, print.info=TRUE)
+#' # posterior estimes of computational grid
+#' zpost[1:10]
+#' # posterior estimates of error variables associated with observations
+#' zpost[11:15]
+#'
 LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_idcs = NULL,
                    ret.invcov=FALSE, control=list()) {
 

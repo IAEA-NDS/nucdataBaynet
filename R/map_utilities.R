@@ -173,10 +173,14 @@ order_maps <- function(maps) {
 #'              rep("obsnode", 3))
 #'   obs <- rep(NA, 9)
 #'
-#'   grph <- get_network_structure(maplist)
+#'   grph <- get_network_structure(maplist, nodes, obs)
+#'   plot(grph)
 #' }
 #'
 get_network_structure <- function(maplist, nodes, obs, nonlinear_ind=TRUE) {
+  if (!requireNamespace("igraph", quietly=TRUE)) {
+    stop("Please install the igraph package to use this function")
+  }
   unique_nodes <- unique(nodes)
   is_observed <- rep(FALSE, length(unique_nodes))
 

@@ -59,7 +59,8 @@ Create a Bayesian network graph
              rep("obsnode", 3))
   obs <- rep(NA, 9)
 
-  grph <- get_network_structure(maplist)
+  grph <- get_network_structure(maplist, nodes, obs)
+  plot(grph)
 }
 
 }

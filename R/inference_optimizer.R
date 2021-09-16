@@ -31,6 +31,7 @@
 #'
 #' @export
 #'
+#' @seealso \code{\link{LMalgo}}
 #' @examples
 #' library(Matrix)
 #' params <- list(
@@ -48,7 +49,7 @@
 #' zref <- rep(0, 15)
 #' obs <- c(rep(NA,10), 5:9)
 #' zpost <- glsalgo(mymap, zprior, U, obs)
-#' # posterior estimes of computational grid
+#' # posterior estimates of values on computational grid
 #' zpost[1:10]
 #' # posterior estimates of error variables associated with observations
 #' zpost[11:15]

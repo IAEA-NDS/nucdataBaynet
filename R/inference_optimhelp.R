@@ -1,3 +1,27 @@
+#' Evaluate posterior density function
+#'
+#' Evaluate the posterior density function for a given vector of
+#' independent variables.
+#'
+#' @param map Mapping object. Usually a compound map, see \code{\link{create_compound_map}}
+#' @param zprior Vector of prior estimates of the independent variables (i.e., associated with nodes without parent nodes)
+#' @param U Prior covariance matrix of the independent variables
+#' @param obs Vector with observed values of dependent nodes. Must be of same
+#'            size as \code{zprior}. An \code{NA} value in this vector means that the
+#'            corresponding variable was not observed.
+#' @param zref Vector with values of independent variables used as reference vector
+#'             in Taylor expansion. The posterior pdf is also evaluated exactly
+#'             at this point.
+#'
+#' @return
+#' Return a list with the following elements:
+#' \tabular{ll}{
+#'   \code{val} \tab Value of the posterior probability density function evaluated at \code{zref} \cr
+#'   \code{jac} \tab Gradient of the posteroir probability density function evaluated at \code{zref}
+#' }
+#'
+#' @export
+#'
 evaluate_logpostpdf <- function(map, zprior, U, obs, zref) {
 
   # error checking of arguments
@@ -48,6 +72,30 @@ evaluate_logpostpdf <- function(map, zprior, U, obs, zref) {
 }
 
 
+#' Generate helper functions for optimization routines
+#'
+#' Generate a list with two function to evaluate the posterior probability
+#' density function and its gradient. These functions can be used in
+#' optimization to find the posterior maximum.
+#'
+#' @param map Mapping object. Usually a compound map, see \code{\link{create_compound_map}}
+#' @param zprior Vector of prior estimates of the independent variables (i.e., associated with nodes without parent nodes)
+#' @param U Prior covariance matrix of the independent variables
+#' @param obs Vector with observed values of dependent nodes. Must be of same
+#'            size as \code{zprior}. An \code{NA} value in this vector means that the
+#'            corresponding variable was not observed.
+#' @param zref Vector with values of independent variables used as reference vector
+#'             in Taylor expansion. The posterior pdf is also evaluated exactly
+#'             at this point.
+#'
+#' @return
+#' Return a list with two functions:
+#' \tabular{ll}{
+#'   \code{fun(x)} \tab Function that evaluates the posterior pdf at \code{x} \cr
+#'   \code{jac(x)} \tab Function that evaluates the gradient of the posterior pdf at \code{x}
+#' }
+#' @export
+#'
 generate_logpostpdf_funs <- function(map, zprior, U, obs, zref) {
 
   last_val <- NULL

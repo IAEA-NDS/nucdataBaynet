@@ -32,27 +32,7 @@
 #' @export
 #'
 #' @seealso \code{\link{LMalgo}}
-#' @examples
-#' library(Matrix)
-#' params <- list(
-#'   mapname = "mymap",
-#'   maptype = "linearinterpol_map",
-#'   src_idx = 1:10,
-#'   tar_idx = 11:15,
-#'   src_x = 1:10,
-#'   tar_x = 3:7
-#' )
-#' mymap <- create_linearinterpol_map()
-#' mymap$setup(params)
-#' U <- Diagonal(n=15, x=c(rep(1e3, 10), rep(1, 5)))
-#' zprior <- rep(0, 15)
-#' zref <- rep(0, 15)
-#' obs <- c(rep(NA,10), 5:9)
-#' zpost <- glsalgo(mymap, zprior, U, obs)
-#' # posterior estimates of values on computational grid
-#' zpost[1:10]
-#' # posterior estimates of error variables associated with observations
-#' zpost[11:15]
+#' @example man/examples/example_inference_01.R
 #'
 glsalgo <- function(map, zprior, U, obs, zref=zprior,
                 adjust_idcs=NULL, damp=0, ret.list=FALSE) {
@@ -191,29 +171,7 @@ glsalgo <- function(map, zprior, U, obs, zref=zprior,
 #' }
 #' @export
 #'
-#' @examples
-#' library(Matrix)
-#' params <- list(
-#'   mapname = "mymap",
-#'   maptype = "linearinterpol_map",
-#'   src_idx = 1:10,
-#'   tar_idx = 11:15,
-#'   src_x = 1:10,
-#'   tar_x = 3:7
-#' )
-#' mymap <- create_linearinterpol_map()
-#' mymap$setup(params)
-#' U <- Diagonal(n=15, x=c(rep(1e3, 10), rep(1, 5)))
-#' zprior <- rep(0, 15)
-#' zref <- rep(0, 15)
-#' obs <- c(rep(NA,10), 5:9)
-#' # it is a linear map so LMalgo finds the solution in one iteration
-#' # but continues to run for ten iterations due to the default mincount setting
-#' res <- LMalgo(mymap, zprior, U, obs, print.info=TRUE)
-#' # posterior estimes of computational grid
-#' zpost[1:10]
-#' # posterior estimates of error variables associated with observations
-#' zpost[11:15]
+#' @example man/examples/example_inference_01.R
 #'
 LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_idcs = NULL,
                    ret.invcov=FALSE, control=list()) {

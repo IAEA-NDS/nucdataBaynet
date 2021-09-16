@@ -1,3 +1,38 @@
+#' Compute posterior covariance matrix block
+#'
+#' \loadmathjax
+#' Compute the covariance matrix between selected elements
+#' according to the posterior distribution.
+#'
+#' @param map Mapping object. Usually a compound map, see \code{\link{create_compound_map}}
+#' @param zpost Vector of posterior estimates of the independent variables (i.e., associated with nodes without parent nodes)
+#' @param U Prior covariance matrix of the independent variables
+#' @param obs Vector with observed values of dependent nodes. Must be of same
+#'            size as \code{zprior}. An \code{NA} value in this vector means that the
+#'            corresponding variable was not observed.
+#' @param row_idcs Indices associated with the variables of interest determining
+#'                 the number of rows of the posterior covariance matrix block
+#' @param col_idcs Indices associated with the variables of interest determining
+#'                 the number of columns of the posterior covariance matrix block
+#' @param ret.dep If \code{TRUE}, return the covariance matrix block for the
+#'                dependent variables, otherwise of the independent variables.
+#'                Default is \code{FALSE}.
+#'
+#' @note
+#' The posterior covariance matrix block is an approximation to the true posterior
+#' covariance matrix. It can be expected to be good if the non-linear relationships
+#' in the Bayesian network defined by \code{map} are in good approximation linear
+#' in the domain associated with significant values of the posterior density
+#' function.
+#'
+#' @return
+#' Return the posterior covariance matrix block \mjseqn{\Sigma_{I,J}}
+#' with the indices \mjseqn{I} specified in \code{row_idcs} and and the
+#' indices in \mjseqn{J} specified in \code{col_idcs}.
+#' @export
+#'
+#' @example man/examples/example_inference_01.R
+#'
 get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs, ret.dep=FALSE) {
 
   stopifnot(length(zpost) == nrow(U))
@@ -72,6 +107,33 @@ get_posterior_cov <- function(map, zpost, U, obs, row_idcs, col_idcs, ret.dep=FA
 }
 
 
+#' Draw a sample from the posterior distribution
+#'
+#' Draw a sample from the approximate posterior distribution.
+#'
+#' @param map Mapping object. Usually a compound map, see \code{\link{create_compound_map}}
+#' @param zpost Vector of posterior estimates of the independent variables (i.e., associated with nodes without parent nodes)
+#' @param U Prior covariance matrix of the independent variables
+#' @param obs Vector with observed values of dependent nodes. Must be of same
+#'            size as \code{zprior}. An \code{NA} value in this vector means that the
+#'            corresponding variable was not observed.
+#' @param num Number of samples
+#'
+#' @note
+#' The samples are obtained by relying on an approximation to the true posterior
+#' covariance matrix. The samples are an accurate reflection of the true posterior
+#' covariance matrix if the non-linear relationships in the Bayesian network
+#' defined by \code{map} are in good approximation linear
+#' in the domain associated with significant values of the posterior density
+#' function.
+#'
+#' @return
+#' Return a matrix in which each column contains a realization of the independent
+#' variables from the approximate posterior distribution.
+#' @export
+#'
+#' @example man/examples/example_inference_01.R
+#'
 get_posterior_sample <- function(map, zpost, U, obs, num) {
   adjustable <- diag(U) > 0
   observed <- !is.na(obs)

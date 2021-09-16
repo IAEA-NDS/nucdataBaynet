@@ -1,3 +1,43 @@
+#' Create a mapping
+#'
+#' This function creates a mapping from a parameter list.
+#'
+#' It calls the mapping creation function responsible for mappings
+#' of \code{maptype} stated in the parameter list. It also
+#' invokes the \code{setup} function to initialize the mapping,
+#' provided by all mapping objects, see the \strong{Value} section
+#' of \code{\link{create_maptype_map}}.
+#' For all maps the fields \code{mapname} and \code{maptype} must be present
+#' in the parameter list.
+#' The other parameters depend on the specifics
+#' of the mapping, see e.g., \code{\link{create_linearinterpol_map}}.
+#'
+#' @note
+#' This function should be preferred over the specialized mapping creation
+#' functions, such as \code{\link{create_linearinerpol_mapping}}.
+#'
+#' @param params Parameter list with the mapping definition, see \strong{Details}.
+#'
+#' @return
+#' Returns a list of functions to operate with the mapping, see \code{\link{create_maptype_map}}.
+#'
+#' @export
+#'
+#' @family mappings
+#' @examples
+#' params <- list(
+#'   mapname = "mylinearintmap",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 4:6,
+#'   src_x = c(1,5,10),
+#'   tar_x = c(4,5,6)
+#' )
+#' mymap <- create_map(params)
+#' x <- c(1,2,3,0,0,0)
+#' mymap$propagate(x)
+#' mymap$jacobian(x)
+#'
 create_map <- function(params) {
   if (! "maptype" %in% names(params)) {
     print(params)
@@ -16,6 +56,43 @@ create_map <- function(params) {
 }
 
 
+#' Sort a list of mappings
+#'
+#' Sort a list of mappings so that the sequential application of
+#' the mappings yields the correct result.
+#'
+#' Mappings whose source indices contain target indices of another mapping
+#' must not be applied before that mapping. This function puts the mappings
+#' into an order to ensure this criterion is met.
+#'
+#' @param maps List of mapping objects, e.g., as obtained by \code{\link{create_map}}.
+#'
+#' @return
+#' Return a list with the ordered maps
+#' @export
+#'
+#' @examples
+#' params1 <- list(
+#'   mapname = "mylinearmap1",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 1:3,
+#'   tar_idx = 4:6,
+#'   src_x = c(1,5,10),
+#'   tar_x = c(4,5,6)
+#' )
+#' params2 <- list(
+#'   mapname = "mylinearmap2",
+#'   maptype = "linearinterpol_map",
+#'   src_idx = 4:6,
+#'   tar_idx = 7:9,
+#'   src_x = c(4,5,7),
+#'   tar_x = c(4.5, 5, 5.5)
+#' )
+#' mymap1 <- create_map(params1)
+#' mymap2 <- create_map(params2)
+#' ordmaps <- order_maps(list(mymap2, mymap1))
+#' lapply(ordmaps, function(x) x$getName())
+#'
 order_maps <- function(maps) {
   ordmaps <- maps
   if (length(ordmaps) > 1)
@@ -45,21 +122,60 @@ order_maps <- function(maps) {
 }
 
 
-is_self_map <- function(map) {
-  numDups <- anyDuplicated(c(map$get_src_idx(),
-                             map$get_tar_idx()))
-  return(numDups > 0)
-}
-
-get_selfmap_mask <- function(src_idx, tar_idx, n=max(src_idx, tar_idx)) {
-  self_map_mask <- rep(FALSE, n)
-  self_map_mask[src_idx] <- TRUE
-  self_map_mask[tar_idx] <- self_map_mask[tar_idx] & TRUE
-  self_map_mask[-tar_idx] <- self_map_mask[-tar_idx] & FALSE
-  return(self_map_mask)
-}
-
-
+#' Get network structre
+#'
+#' Create a Bayesian network graph
+#'
+#' @param maplist A list of mapping objects
+#' @param nodes A vector with the node name associated to the variables.
+#'              Several variables can belong to the same node.
+#' @param obs A vector of observed values. Unobserved values are represented by
+#'            \code{NA}.
+#' @param nonlinear_ind Should non-linear interactions between nodes be
+#'                      indicated by dashed lines.
+#'
+#' @return
+#' Return an igraph graph object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   library(igraph)
+#'   params1 <- list(
+#'     mapname = "mylinearmap1",
+#'     maptype = "linearinterpol_map",
+#'     src_idx = 1:3,
+#'     tar_idx = 4:6,
+#'     src_x = c(1,5,10),
+#'     tar_x = c(4,5,6)
+#'   )
+#'   params2 <- list(
+#'     mapname = "mylinearmap2",
+#'     maptype = "linearinterpol_map",
+#'     src_idx = 4:6,
+#'     tar_idx = 7:9,
+#'     src_x = c(4,5,7),
+#'     tar_x = c(4.5, 5, 5.5)
+#'   )
+#'   compparams <- list(
+#'     mapname = "mycompmap",
+#'     maptype = "compound_map",
+#'     maps = list(params1, params2)
+#'   )
+#'
+#'   mymap1 <- create_map(params1)
+#'   mymap2 <- create_map(params2)
+#'
+#'   mymap <- create_map(compparams)
+#'   maplist <- mymap$getMaps()
+#'   nodes <- c(rep("mynode1", 3),
+#'              rep("mynode2", 3),
+#'              rep("obsnode", 3))
+#'   obs <- rep(NA, 9)
+#'
+#'   grph <- get_network_structure(maplist)
+#' }
+#'
 get_network_structure <- function(maplist, nodes, obs, nonlinear_ind=TRUE) {
   unique_nodes <- unique(nodes)
   is_observed <- rep(FALSE, length(unique_nodes))
@@ -91,4 +207,19 @@ get_network_structure <- function(maplist, nodes, obs, nonlinear_ind=TRUE) {
   V(grph)$color <- ifelse(is_observed, "lightgray", "white")
   V(grph)$observed <- is_observed
   return(grph)
+}
+
+
+is_self_map <- function(map) {
+  numDups <- anyDuplicated(c(map$get_src_idx(),
+                             map$get_tar_idx()))
+  return(numDups > 0)
+}
+
+get_selfmap_mask <- function(src_idx, tar_idx, n=max(src_idx, tar_idx)) {
+  self_map_mask <- rep(FALSE, n)
+  self_map_mask[src_idx] <- TRUE
+  self_map_mask[tar_idx] <- self_map_mask[tar_idx] & TRUE
+  self_map_mask[-tar_idx] <- self_map_mask[-tar_idx] & FALSE
+  return(self_map_mask)
 }

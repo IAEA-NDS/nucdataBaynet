@@ -55,6 +55,7 @@ Other mappings:
 \code{\link{create_linearinterpol_map}()},
 \code{\link{create_linearinterpol_with_xtrafo_map}()},
 \code{\link{create_linearmap_map}()},
+\code{\link{create_map}()},
 \code{\link{create_nonlinear_map}()},
 \code{\link{create_normerr_map}()},
 \code{\link{create_product_map}()}

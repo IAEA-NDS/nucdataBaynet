@@ -302,4 +302,3 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   }
   return(res)
 }
-

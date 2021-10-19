@@ -1,12 +1,13 @@
 Package: nucdataBaynet
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Bayesian networks for nuclear data evaluation
+Version: 0.2.0
+Author: Georg Schnabel [aut,cre]
+Maintainer: Georg Schnabel <georg.schnabel@nucleardata.com>
+Description: This package enables the creation of and inference in
+    Bayesian networks with multivariate normal conditional distributions
+    and linear and non-linear functional relationships between nodes.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: Matrix, data.table, numDeriv, mathjaxr

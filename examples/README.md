@@ -1,4 +1,4 @@
-# Examples and tutorials
+## Examples and tutorials
 
 This directory contains examples that show how to set up Bayesian networks
 and perform inference in them. 

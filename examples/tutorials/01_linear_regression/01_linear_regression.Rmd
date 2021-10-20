@@ -1,8 +1,8 @@
 ---
 title: "Simple linear regression with the nucdataBaynet package"
 author: "Georg Schnabel" 
-date: October 19, 2021
-output: html_document
+date: October 20, 2021
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -272,10 +272,10 @@ print(ggp)
 ## Summary
 
 This document discussed the creation of a simple Bayesian network with three
-nodes given by a computional mesh, experimental data and a normalization error.
+nodes given by a computational mesh, experimental data and a normalization error.
 In the first step a *node_dt* datatable was created summarizing the information
-about the nodes. In the second steps mappings were established between the nodes
-on the basis of query operation on *node_dt*.
+about the nodes. In the second step, mappings were established between the nodes
+by using query operation on *node_dt*.
 Afterwards, Bayesian inference was performed on the Bayesian network by relying
 on a customized Levenberg-Marquardt algorithm, which amounted to simple linear
 regression in this example.

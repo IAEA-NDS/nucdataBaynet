@@ -5,6 +5,8 @@ It was designed with the specifics of nuclear data evaluation in mind but can be
 
 *Note: The development of this package is in an early stage and the interface of the functions cannot be expected to be stable yet and documentation needs to be extended as well.*
 
+![image](https://github.com/IAEA-NDS/nucdataBaynet/raw/main/bayesian-network-example.png)
+
 ### Installation
 
 The packages *Matrix*, *data.table*, *numDeriv* and *mathjaxr* are prerequisites and the packages *igraph* and *ggplot2* are recommended auxiliary packages. These packages are available on the CRAN network and can be installed by

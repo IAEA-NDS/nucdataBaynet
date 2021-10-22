@@ -2,6 +2,10 @@
 
 This R package enables the creation of and inference in Bayesian networks with multivariate normal conditional distributions and linear and non-linear functional relationships between different nodes.
 It was designed with the specifics of nuclear data evaluation in mind but can be used in other application scenarios that are compatible with the modeling assumptions mentioned in the previous sentence. 
+The mathematical aspects of this package are described in the following [arxiv preprint](https://arxiv.org/abs/2110.10322):
+```
+G. Schnabel, R. Capote, A.J. Koning, D.A. Brown, "Nuclear data evaluation with Bayesian networks", preprint, arXiv:2110.10322, October 2021
+```
 
 *Note: The development of this package is in an early stage and the interface of the functions cannot be expected to be stable yet and documentation needs to be extended as well.*
 

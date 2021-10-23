@@ -2,7 +2,7 @@
 title: "Simple linear regression with the nucdataBaynet package"
 author: "Georg Schnabel" 
 date: October 20, 2021
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -265,6 +265,7 @@ the `ggplot2` package.
 ggp <- ggplot() + theme_bw()
 ggp <- ggp + geom_point(aes(x=ENERGY, y=OBS), data=node_dt[NODE=="expdata"])
 ggp <- ggp + geom_errorbar(aes(x=ENERGY, ymin=OBS-UNC, ymax=OBS+UNC), data=node_dt[NODE=="expdata"])
+ggp <- ggp + geom_ribbon(aes(x=ENERGY, ymin=PRED-UNC_POST, ymax=PRED+UNC_POST), alpha=0.5, data=node_dt[NODE=="mesh"])
 ggp <- ggp + geom_line(aes(x=ENERGY, y=PRED), data=node_dt[NODE=="mesh"])
 print(ggp)
 ```

@@ -120,3 +120,31 @@ test_that("propagate works for a mesh with a single point if x matches perfectly
   expres[curparams$tar_idx] <- expres[curparams$tar_idx] + inp[curparams$src_idx]
   expect_equal(res, expres)
 })
+
+
+test_that("scaling factor is correctly taken into account", {
+  scalefact <- 5.7
+  refparams <- params
+  newparams <- params
+  newparams$scalefact <- scalefact
+  curmap1 <- create_map(refparams)
+  curmap2 <- create_map(newparams)
+  inp <- 1:10
+  res1 <- curmap1$propagate(inp, with.id=FALSE)
+  res2 <- curmap2$propagate(inp, with.id=FALSE)
+  expect_equal(scalefact*res1, res2)
+  res3 <- curmap1$propagate(inp, with.id=TRUE)
+  res4 <- curmap2$propagate(inp, with.id=TRUE)
+  expect_equal(((res3-inp)*scalefact)+inp, res4)
+})
+
+
+test_that("linearinterpol_map propagate with scalefact and without id matrix works correctly", {
+  scalefact <- 3.1
+  newparams <- params
+  newparams$scalefact <- scalefact
+  map <- create_map(newparams)
+  res <- map$propagate(c(21:24, rep(0,6)), with.id = FALSE)
+  expect_equal(res[6:10], scalefact * c(22, 22.5, 23, 23.5, 24))
+  expect_equal(res[1:5], rep(0, 5))
+})

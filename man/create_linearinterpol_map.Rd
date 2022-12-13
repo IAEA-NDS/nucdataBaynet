@@ -25,7 +25,9 @@ The following fields are required in the parameter list to initialize the mappin
 \code{tar_x} \tab Vector with the mesh associated with the target indices \cr
 \code{zero_outside} \tab Default is \code{FALSE}. If TRUE, y-values of target x-values outside
                          the limits of the source mesh will be zero, otherwise this situation
-                         is not allowed.
+                         is not allowed. \cr
+\code{scalefact} \tab A scalar that is multiplied with the resulting numbers from linear interpolation
+                      to obtain the final result of the mapping. Default is 1.
 }
 }
 \examples{

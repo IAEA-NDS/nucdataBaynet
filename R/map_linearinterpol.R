@@ -14,7 +14,9 @@
 #' \code{tar_x} \tab Vector with the mesh associated with the target indices \cr
 #' \code{zero_outside} \tab Default is \code{FALSE}. If TRUE, y-values of target x-values outside
 #'                          the limits of the source mesh will be zero, otherwise this situation
-#'                          is not allowed.
+#'                          is not allowed. \cr
+#' \code{scalefact} \tab A scalar that is multiplied with the resulting numbers from linear interpolation
+#'                       to obtain the final result of the mapping. Default is 1.
 #' }
 #'
 #' @return
@@ -49,6 +51,7 @@ create_linearinterpol_map <- function() {
     stopifnot(length(params$tar_idx) > 0)
     stopifnot(length(params$src_idx) == length(params$src_x))
     stopifnot(length(params$tar_idx) == length(params$tar_x))
+    stopifnot(is.null(params$scalefact) || length(params$scalefact)==1)
     src_ord <- order(params$src_x)
     map <<- list(
       maptype = params$maptype,
@@ -58,7 +61,8 @@ create_linearinterpol_map <- function() {
       tar_idx = params$tar_idx,
       src_x = params$src_x[src_ord],
       tar_x = params$tar_x,
-      zero_outside = params$zero_outside
+      zero_outside = params$zero_outside,
+      scalefact = if (!is.null(params$scalefact)) params$scalefact else 1
     )
     if (!isTRUE(map$zero_outside)) {
       check_mesh(map$tar_x)
@@ -155,6 +159,8 @@ create_linearinterpol_map <- function() {
     i <- c(i, gidrowidx)
     j <- c(j, gidcolidx)
     coeff <- c(coeff, rep(1, length(gidrowidx)))
+    # apply scaling factor
+    coeff <- coeff * map$scalefact
     # create the jacobian
     S <<- sparseMatrix(i = i, j = j, x = coeff,
                        dims = rep(dim,2))

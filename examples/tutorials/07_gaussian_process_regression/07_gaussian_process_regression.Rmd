@@ -181,7 +181,7 @@ consequently `NA` (=Not Answered).
 ### Glueing everything together to obtain a node data table
 
 Finally, we need to assemble one data table with the information about all the
-nodes. We make can use of the function `rbindlist` of the `data.table` package:
+nodes. We make use of the function `rbindlist` of the `data.table` package:
 
 ```{r}
 node_dt <- rbindlist(list(sigma_dt, norm_dt, expdata_dt), fill = TRUE)

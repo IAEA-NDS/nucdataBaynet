@@ -88,7 +88,7 @@ compute values in-between the energies of the mesh.
 sigma_dt <- data.table(
   NODE = "sigma",
   PRIOR = 0,
-  UNC = 100,
+  UNC = 0,
   OBS = NA,
   ENERGY = seq(Emin, Emax, by=1e-4)
 )

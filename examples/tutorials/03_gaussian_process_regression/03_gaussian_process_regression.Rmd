@@ -1,10 +1,10 @@
 ---
-title: "Gaussian process regression with the nucdataBaynet package"
+title: "Function estimation with the nucdataBaynet package"
 author: "Georg Schnabel"
 date: "2022-11-12"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,12 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 This R Markdown document shows the setup of a Bayesian network with the 
-*nucdataBaynet* package to perform Gaussian process regression using a set of
-data points as input. It is assumed that each data point is affected by a
+*nucdataBaynet* package to estimate a function from a set of data points.
+We assume that each data point is affected by a
 statistical error and that all data points share a common normalization error. 
 The example data are taken from the EXFOR database and represent measurements
 of the neutron-induced total cross section of Fe-56 for incident eneergies
-between 1.0 and 1.1 MeV. 
+between 1.0 and 1.1 MeV.
+In order to ensure that the estimated curve is smooth, we will specify
+pseudo-observations of the second derivative of the unknown function, which
+can be regarded as an implicit construction of a Gaussian process.
 
 ## Loading the required packages and defining the energy range
 
@@ -88,7 +91,7 @@ compute values in-between the energies of the mesh.
 sigma_dt <- data.table(
   NODE = "sigma",
   PRIOR = 0,
-  UNC = 1e30,
+  UNC = Inf,
   OBS = NA,
   ENERGY = seq(Emin, Emax, by=1e-5)
 )
@@ -96,7 +99,7 @@ sigma_dt <- data.table(
 
 The name of the node is provided in the `NODE` field. We assume as prior best
 estimate a vector of zeros stored in the `PRIOR` column. The `UNC` column
-contains the associated prior uncertainty, which we set to a very large value to
+contains the associated prior uncertainty, which we set to infinity to
 obtain a non-informative prior. The `OBS` column is given by `NA` values as we do
 not have any measured values for this node.  Finally, the `ENERGY` column
 defines the energies associated with the cross sections on the computational
@@ -128,14 +131,15 @@ sigma_2nd_dt <- data.table(
 )
 ```
 
-Using a vector with zeros for the prior values favors a straight line as most
-likely solution in the absence of data. Non-zero values would bias the solution
-to a parabola. By introducing a vector of zeros for `OBS`, we implement the
-assumption that the values in this node have been observed.
+Using a vector with zeros for the prior values given in column `PRIOR`
+favors a straight line as most
+likely solution in the absence of data. Non-zero values of `PRIOR` would bias
+the solution towards a parabola. By introducing a vector of zeros for `OBS`,
+we implement the assumption that the values in this node have been observed.
 The vector of energies coincides with that for the node `sigma` except that the
 first and last element are missing. This is due to the implementation of the
 second derivative in the associated mapping, type `?create_derivative_2nd_map`
-in the R prompt for details.
+on the R prompt for details.
 
 ### Nodes associated with experimental data
 
@@ -196,7 +200,7 @@ node_dt <- rbindlist(list(sigma_dt, sigma_2nd_dt, norm_dt, expdata_dt), fill = T
 The `fill=TRUE` argument means that columns not present in one of the data
 tables will be created and filled with `NA` values for them. This is necessary
 as not all columns are meaningful for all node types. For example, the node
-`norm_dt` contains a single number representing the normalization error
+`lambda` contains a single number representing the normalization error
 affecting all data points, hence this number cannot be assigned to a single
 incident energy in a meaningful way.
 
@@ -218,14 +222,15 @@ in combination with the `Diagonal()` function from the `Matrix` package:
 covmat <- Diagonal(n=nrow(node_dt), x=node_dt$UNC^2)
 ```
 
-**It is very important to square the uncertainties before storing them in the
-diagonal of a covariance matrix.**
+Please note that it is **very important** to square the uncertainties before
+storing them in the diagonal of a covariance matrix.
 
 The covariance matrix is stored as a sparse matrix. The degree of sparseness
-is extremely high as all non-diagonal elements are zero. This was achieved by
-a special construction of the Gaussian process using pseudo-observations of
-second derivatives and the modelization of the normalization error as its own
-node.
+is extremely high as all non-diagonal elements are zero. Despite the covariance
+matrix being diagonal, the prior covariance matrix still incorporates a bias
+towards smooth solutions because a subset of diagonal elements is associated
+with the prior uncertainties for pseudo-observations of the second derivative of
+the unknown function.
 
 ## Establishing links
 
@@ -233,13 +238,14 @@ The next step is the creation of links between the various nodes. Links are
 established by mappings that connect source nodes to target nodes by a
 functional relationship.
 
-### Mapping to implement Gaussian process prior 
+### Mapping to second derivatives to impose smoothness bias
 
-For the Gaussian process construction, we need to link the node `sigma` to
-`sigma_2nd`. The functional relationship is given by a finite difference
-approximation of the second derivative, which is explained in the help page of
-`create_derivative2nd_map`, type `?create_derivative2nd_map` on an R prompt to
-view it.
+To enforce smoothness, we need to link the node `sigma` to
+`sigma_2nd` associated with the pseudo-observation of the second derivatives.
+The functional relationship is given by a finite difference
+approximation that computes the second derivative, which is explained in the
+help page of `create_derivative2nd_map` (type `?create_derivative2nd_map` on
+an R prompt to view it).
 
 The definition of a mapping is given by a list. Here is the definition of the
 mapping to associate `sigma` to `sigma_2nd` (explanation following afterwards):
@@ -273,7 +279,7 @@ the source and target mesh. For the time being, the energies of the target mesh
 must be a subset of those of the source mesh and for each energy of the target
 mesh there must be a smaller and a larger energy in the source mesh available.
 
-### Maping from computational mesh to experimental data
+### Mapping from computational mesh to experimental data
 
 To obtain estimates of the cross sections associated with the node `sigma`,
 we need to define a mapping between `sigma` and the experimental data node
@@ -430,12 +436,12 @@ ggp
 
 ## Summary
 
-This tutorial explained the construction of a Bayesian network to perform
-inference using a sparse Gaussian process.  The data points were given by
-measurements of the energy-dependent total cross section of Fe-56 for
-incident neutrons available in the EXFOR database. It was shown how besides
-statistical uncertainties also a normalization uncertainty can be taken into
-account by the introduction of a dedicated node. It was demonstrated how
-the smoothness of solutions can be controlled by adjusting the uncertainties
-of the pseudo-observation of the second derivatives of the cross sections on
-the computational mesh.
+This tutorial explained the construction of a Bayesian network to infer
+an unknown function from a set of data points.
+The data points were given by measurements of the energy-dependent total cross
+section of Fe-56 for incident neutrons available in the EXFOR database. It was
+shown how besides statistical uncertainties also a normalization uncertainty can
+be taken into account by the introduction of a dedicated node. It was
+demonstrated how the smoothness of solutions can be controlled by adjusting the
+uncertainties of the pseudo-observation of the second derivatives of the cross
+sections on the computational mesh.

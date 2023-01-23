@@ -174,7 +174,7 @@ glsalgo <- function(map, zprior, U, obs, zref=zprior,
 #' @example man/examples/example_inference_01.R
 #'
 LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_idcs = NULL,
-                   ret.invcov=FALSE, control=list()) {
+                   ret.invcov=FALSE, must.converge=TRUE, control=list()) {
 
   # LM parameters
   defcontrol = list(
@@ -218,12 +218,11 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
   last_reject <- TRUE
   rel_gain <- Inf
   relgain_hist <- rep(Inf, control$reltol_steps)
+  converged <- FALSE
   while ((reject_cnt < maxreject) &&
          ((mincount >= 0 && cnt < mincount && cnt < maxcount) ||
-          (mincount < 0 && cnt2 < (-mincount) && cnt < maxcount) ||
-          (cnt < maxcount &&
-           max(relgain_hist) > abs(reltol) &&
-           abs(relgain) > reltol2))) {
+          (mincount < 0 && cnt2 < (-mincount) && cnt < maxcount)) ||
+          (cnt < maxcount && !converged)) {
     cnt <- cnt + 1
     zprop <- glsalgo(map, zprior, U, obs, zref=zref,
                  adjust_idcs=adjust_idcs, damp=lambda)
@@ -283,6 +282,18 @@ LMalgo <- function(map, zprior, U, obs, zref=zprior, print.info=FALSE, adjust_id
       last_reject <- TRUE
       reject_cnt <- reject_cnt + 1
     }
+
+    if (max(relgain_hist) <= abs(reltol) &&
+          abs(relgain) <= reltol2 && !last_reject) {
+        converged <- TRUE
+    }
+  }
+
+  if (must.converge && !converged) {
+    stop(paste0(
+      "LM algorithm did not converge! ",
+      "Consider changing control parameters, ",
+      "such as maxcount"))
   }
 
   res <- list(

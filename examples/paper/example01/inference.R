@@ -32,7 +32,8 @@ for (cur_stage in optim_scheme) {
   adjust_idcs <- node_dt[NODE %in% nodesel, IDX]
   optres <- LMalgo(compmap, zprior, U, obs, print.info=TRUE, zref = zref,
                    adjust_idcs = adjust_idcs,
-                   control=list(maxcount=maxiter, mincount=-3, tau=1e-6))
+                   control=list(maxcount=maxiter, mincount=-3, tau=1e-6),
+                   must.converge=FALSE)
   zpost <- optres$zpost
 }
 
